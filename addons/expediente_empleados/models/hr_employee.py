@@ -20,25 +20,83 @@ class HrEmployee(models.Model):
     no_seguro_social = fields.Char(string="No. de seguridad social")
     puesto_expediente = fields.Char(string="Puesto del expediente")
 
-    comp_domic = fields.Binary(string="Comprobante de domicilio", attachment=True)
-    comp_domic_filename = fields.Char(string="Nombre del comprobante de domicilio")
-    const_sit_fiscal = fields.Binary(string="Constancia de situación fiscal", attachment=True)
-    const_sit_fiscal_filename = fields.Char(string="Nombre de la constancia fiscal")
-    descript_puesto = fields.Binary(string="Descripción de puesto", attachment=True)
-    descript_puesto_filename = fields.Char(string="Nombre de la descripción de puesto")
-    licencia_chof = fields.Binary(string="Licencia de conducir", attachment=True)
-    licencia_chof_filename = fields.Char(string="Nombre de la licencia")
-    solicitud_empl = fields.Binary(string="Solicitud de empleo", attachment=True)
-    solicitud_empl_filename = fields.Char(string="Nombre de la solicitud")
-    act_naci = fields.Binary(string="Acta de nacimiento", attachment=True)
-    act_naci_filename = fields.Char(string="Nombre del acta de nacimiento")
-    ine = fields.Binary(string="INE", attachment=True)
-    ine_filename = fields.Char(string="Nombre de la INE")
-    curp = fields.Binary(string="CURP", attachment=True)
-    curp_filename = fields.Char(string="Nombre de la CURP")
-    rfc = fields.Binary(string="RFC", attachment=True)
-    rfc_filename = fields.Char(string="Nombre del RFC")
-    contrato = fields.Binary(string="Contrato", attachment=True)
-    contrato_filename = fields.Char(string="Nombre del contrato")
-    acta_hechos = fields.Binary(string="Acta de hechos", attachment=True)
-    acta_hechos_filename = fields.Char(string="Nombre del acta de hechos")
+    # ── Documentos principales ────────────────────────────────────────────────
+    comp_domic_ids = fields.Many2many(
+        "ir.attachment",
+        "hr_emp_comp_domic_rel",
+        "employee_id",
+        "attachment_id",
+        string="Comprobante de domicilio",
+    )
+    const_sit_fiscal_ids = fields.Many2many(
+        "ir.attachment",
+        "hr_emp_const_sit_fiscal_rel",
+        "employee_id",
+        "attachment_id",
+        string="Constancia de situación fiscal",
+    )
+    ine_ids = fields.Many2many(
+        "ir.attachment",
+        "hr_emp_ine_rel",
+        "employee_id",
+        "attachment_id",
+        string="INE",
+    )
+    curp_ids = fields.Many2many(
+        "ir.attachment",
+        "hr_emp_curp_rel",
+        "employee_id",
+        "attachment_id",
+        string="CURP",
+    )
+    rfc_ids = fields.Many2many(
+        "ir.attachment",
+        "hr_emp_rfc_rel",
+        "employee_id",
+        "attachment_id",
+        string="RFC",
+    )
+
+    # ── Documentos laborales ─────────────────────────────────────────────────
+    solicitud_empl_ids = fields.Many2many(
+        "ir.attachment",
+        "hr_emp_solicitud_empl_rel",
+        "employee_id",
+        "attachment_id",
+        string="Solicitud de empleo",
+    )
+    contrato_ids = fields.Many2many(
+        "ir.attachment",
+        "hr_emp_contrato_rel",
+        "employee_id",
+        "attachment_id",
+        string="Contrato",
+    )
+    descript_puesto_ids = fields.Many2many(
+        "ir.attachment",
+        "hr_emp_descript_puesto_rel",
+        "employee_id",
+        "attachment_id",
+        string="Descripción de puesto",
+    )
+    licencia_chof_ids = fields.Many2many(
+        "ir.attachment",
+        "hr_emp_licencia_chof_rel",
+        "employee_id",
+        "attachment_id",
+        string="Licencia de conducir",
+    )
+    act_naci_ids = fields.Many2many(
+        "ir.attachment",
+        "hr_emp_act_naci_rel",
+        "employee_id",
+        "attachment_id",
+        string="Acta de nacimiento",
+    )
+    acta_hechos_ids = fields.Many2many(
+        "ir.attachment",
+        "hr_emp_acta_hechos_rel",
+        "employee_id",
+        "attachment_id",
+        string="Acta de hechos",
+    )

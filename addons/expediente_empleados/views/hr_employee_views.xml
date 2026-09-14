@@ -17,81 +17,33 @@
                         </group>
                     </group>
 
-                    <!-- Documentos principales -->
                     <separator string="Documentos principales"/>
-                    <div class="o_row">
-                        <div class="o_wrap_field">
-                            <label for="comp_domic"/>
-                            <field name="comp_domic" widget="image" filename="comp_domic_filename"
-                                options="{'size': [200, 200], 'preview_image': 'comp_domic'}"/>
-                            <field name="comp_domic_filename" invisible="1"/>
-                        </div>
-                        <div class="o_wrap_field">
-                            <label for="const_sit_fiscal"/>
-                            <field name="const_sit_fiscal" widget="image" filename="const_sit_fiscal_filename"
-                                options="{'size': [200, 200], 'preview_image': 'const_sit_fiscal'}"/>
-                            <field name="const_sit_fiscal_filename" invisible="1"/>
-                        </div>
-                        <div class="o_wrap_field">
-                            <label for="ine"/>
-                            <field name="ine" widget="image" filename="ine_filename"
-                                options="{'size': [200, 200], 'preview_image': 'ine'}"/>
-                            <field name="ine_filename" invisible="1"/>
-                        </div>
-                        <div class="o_wrap_field">
-                            <label for="curp"/>
-                            <field name="curp" widget="image" filename="curp_filename"
-                                options="{'size': [200, 200], 'preview_image': 'curp'}"/>
-                            <field name="curp_filename" invisible="1"/>
-                        </div>
-                        <div class="o_wrap_field">
-                            <label for="rfc"/>
-                            <field name="rfc" widget="image" filename="rfc_filename"
-                                options="{'size': [200, 200], 'preview_image': 'rfc'}"/>
-                            <field name="rfc_filename" invisible="1"/>
-                        </div>
-                    </div>
+                    <group>
+                        <group>
+                            <field name="comp_domic_ids" widget="many2many_binary" string="Comprobante de domicilio"/>
+                            <field name="const_sit_fiscal_ids" widget="many2many_binary" string="Constancia de situación fiscal"/>
+                            <field name="ine_ids" widget="many2many_binary" string="INE"/>
+                        </group>
+                        <group>
+                            <field name="curp_ids" widget="many2many_binary" string="CURP"/>
+                            <field name="rfc_ids" widget="many2many_binary" string="RFC"/>
+                        </group>
+                    </group>
 
                     <notebook>
                         <page string="Documentos laborales">
-                            <div class="o_row">
-                                <div class="o_wrap_field">
-                                    <label for="solicitud_empl"/>
-                                    <field name="solicitud_empl" widget="image" filename="solicitud_empl_filename"
-                                        options="{'size': [200, 200], 'preview_image': 'solicitud_empl'}"/>
-                                    <field name="solicitud_empl_filename" invisible="1"/>
-                                </div>
-                                <div class="o_wrap_field">
-                                    <label for="contrato"/>
-                                    <field name="contrato" widget="image" filename="contrato_filename"
-                                        options="{'size': [200, 200], 'preview_image': 'contrato'}"/>
-                                    <field name="contrato_filename" invisible="1"/>
-                                </div>
-                                <div class="o_wrap_field">
-                                    <label for="descript_puesto"/>
-                                    <field name="descript_puesto" widget="image" filename="descript_puesto_filename"
-                                        options="{'size': [200, 200], 'preview_image': 'descript_puesto'}"/>
-                                    <field name="descript_puesto_filename" invisible="1"/>
-                                </div>
-                                <div class="o_wrap_field">
-                                    <label for="licencia_chof"/>
-                                    <field name="licencia_chof" widget="image" filename="licencia_chof_filename"
-                                        options="{'size': [200, 200], 'preview_image': 'licencia_chof'}"/>
-                                    <field name="licencia_chof_filename" invisible="1"/>
-                                </div>
-                                <div class="o_wrap_field">
-                                    <label for="act_naci"/>
-                                    <field name="act_naci" widget="image" filename="act_naci_filename"
-                                        options="{'size': [200, 200], 'preview_image': 'act_naci'}"/>
-                                    <field name="act_naci_filename" invisible="1"/>
-                                </div>
-                                <div class="o_wrap_field">
-                                    <label for="acta_hechos"/>
-                                    <field name="acta_hechos" widget="image" filename="acta_hechos_filename"
-                                        options="{'size': [200, 200], 'preview_image': 'acta_hechos'}"/>
-                                    <field name="acta_hechos_filename" invisible="1"/>
-                                </div>
-                            </div>
+                            <group>
+                                <group>
+                                    <field name="solicitud_empl_ids" widget="many2many_binary" string="Solicitud de empleo"/>
+                                    <field name="contrato_ids" widget="many2many_binary" string="Contrato"/>
+                                    <field name="descript_puesto_ids" widget="many2many_binary" string="Descripción de puesto"/>
+                                </group>
+                                <group>
+                                    <field name="licencia_chof_ids" widget="many2many_binary" string="Licencia de conducir"/>
+                                    <field name="act_naci_ids" widget="many2many_binary" string="Acta de nacimiento"/>
+                                    <field name="acta_hechos_ids" widget="many2many_binary" string="Acta de hechos"/>
+                                </group>
+                            </group>
                         </page>
                     </notebook>
                     <field name="observaciones_expediente" placeholder="Notas del expediente..."/>
