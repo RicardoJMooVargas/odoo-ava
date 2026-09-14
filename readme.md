@@ -72,6 +72,29 @@ DB_USER=odoo_prod
 DB_PASSWORD=TU_PASSWORD_SEGURO
 ```
 
+#### Inicialización de la base de datos (solo la primera vez)
+
+Después del primer despliegue, si la base de datos está vacía, Odoo no arrancará correctamente. Inicialízala una sola vez desde la terminal del container:
+
+```bash
+odoo -i base -d odoo --stop-after-init \
+  --db_host=$HOST \
+  --db_port=$PORT \
+  --db_user=$USER \
+  --db_password=$PASSWORD
+```
+
+> Las variables `$HOST`, `$PORT`, `$USER`, `$PASSWORD` ya están disponibles en el shell del container porque las inyecta Docker Compose desde las variables de entorno configuradas en Dokploy.
+
+Una vez terminado, reinicia el servicio. Las credenciales iniciales de Odoo son:
+
+| Campo | Valor |
+|---|---|
+| Usuario | `admin` |
+| Contraseña | `admin` |
+
+> ⚠️ **Cambia la contraseña de `admin` inmediatamente** después del primer login en producción.
+
 ---
 
 ## Comandos útiles

@@ -28,8 +28,6 @@ class HrEmployee(models.Model):
     descript_puesto_filename = fields.Char(string="Nombre de la descripción de puesto")
     licencia_chof = fields.Binary(string="Licencia de conducir", attachment=True)
     licencia_chof_filename = fields.Char(string="Nombre de la licencia")
-    curriculum = fields.Binary(string="Currículum", attachment=True)
-    curriculum_filename = fields.Char(string="Nombre del currículum")
     solicitud_empl = fields.Binary(string="Solicitud de empleo", attachment=True)
     solicitud_empl_filename = fields.Char(string="Nombre de la solicitud")
     act_naci = fields.Binary(string="Acta de nacimiento", attachment=True)
