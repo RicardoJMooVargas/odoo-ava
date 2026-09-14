@@ -1,0 +1,17 @@
+FROM odoo:19.0
+
+# Cambiar a root para copiar archivos y ajustar permisos
+USER root
+
+# Copiar el archivo de configuración
+COPY ./config/odoo.conf /etc/odoo/odoo.conf
+
+# Copiar los addons personalizados
+COPY ./addons /mnt/extra-addons
+
+# Asegurar que el usuario odoo tenga permisos de lectura
+RUN chown -R odoo:odoo /etc/odoo/odoo.conf /mnt/extra-addons && \
+    chmod -R 755 /mnt/extra-addons
+
+# Volver al usuario de Odoo
+USER odoo

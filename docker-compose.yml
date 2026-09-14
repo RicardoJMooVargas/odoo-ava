@@ -1,0 +1,40 @@
+services:
+
+  odoo:
+    build: .
+    image: odoo_custom:19.0
+    container_name: odoo_app
+    restart: unless-stopped
+
+    ports:
+      - "${ODOO_PORT:-8069}:8069"
+
+    volumes:
+      - odoo-data:/var/lib/odoo
+
+    environment:
+      HOST: ${DB_HOST}
+      PORT: ${DB_PORT:-5432}
+      USER: ${DB_USER}
+      PASSWORD: ${DB_PASSWORD}
+      FORCE_REDEPLOY: "1"
+
+    # develop: --dev=all activa recarga automática y debug
+    # production: vacío para máximo rendimiento
+    command: ${ODOO_EXTRA_ARGS:---dev=all}
+
+    networks:
+      - odoo-net
+      - dokploy-network
+
+volumes:
+  odoo-data:
+
+networks:
+  odoo-net:
+    driver: bridge
+
+  # Red externa de Traefik/Dokploy
+  # En local crear una vez: docker network create dokploy-network
+  dokploy-network:
+    external: true

@@ -1,0 +1,48 @@
+<odoo>
+    <record id="view_employee_form_expediente" model="ir.ui.view">
+        <field name="name">hr.employee.form.expediente</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Expediente laboral" name="expediente_laboral">
+                    <group>
+                        <group string="Datos laborales">
+                            <field name="fecha_ingreso"/>
+                            <field name="puesto_expediente"/>
+                            <field name="division"/>
+                            <field name="estatus_expediente"/>
+                            <field name="es_chofer"/>
+                            <field name="no_seguro_social"/>
+                        </group>
+                        <group string="Documentos principales">
+                            <field name="comp_domic" filename="comp_domic_filename"/>
+                            <field name="const_sit_fiscal" filename="const_sit_fiscal_filename"/>
+                            <field name="ine" filename="ine_filename"/>
+                            <field name="curp" filename="curp_filename"/>
+                            <field name="rfc" filename="rfc_filename"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Documentos laborales">
+                            <group>
+                                <group>
+                                    <field name="curriculum" filename="curriculum_filename"/>
+                                    <field name="solicitud_empl" filename="solicitud_empl_filename"/>
+                                    <field name="contrato" filename="contrato_filename"/>
+                                    <field name="descript_puesto" filename="descript_puesto_filename"/>
+                                </group>
+                                <group>
+                                    <field name="licencia_chof" filename="licencia_chof_filename"/>
+                                    <field name="act_naci" filename="act_naci_filename"/>
+                                    <field name="acta_hechos" filename="acta_hechos_filename"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                    <field name="observaciones_expediente" placeholder="Notas del expediente..."/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
