@@ -18,6 +18,7 @@ class HrEmployee(models.Model):
         default="borrador",
     )
     no_seguro_social = fields.Char(string="No. de seguridad social")
+    rfc = fields.Char(string="RFC")
     puesto_expediente = fields.Char(string="Puesto del expediente")
 
     # ── Documentos principales ────────────────────────────────────────────────
@@ -48,13 +49,6 @@ class HrEmployee(models.Model):
         "employee_id",
         "attachment_id",
         string="CURP",
-    )
-    rfc_ids = fields.Many2many(
-        "ir.attachment",
-        "hr_emp_rfc_rel",
-        "employee_id",
-        "attachment_id",
-        string="RFC",
     )
 
     # ── Documentos laborales ─────────────────────────────────────────────────

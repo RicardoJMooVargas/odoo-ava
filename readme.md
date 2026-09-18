@@ -125,7 +125,7 @@ Esto genera el esqueleto del módulo directamente en `./addons/mi_nuevo_modulo/`
 2. Ve a **Aplicaciones**, actualiza la lista de aplicaciones e instala **Expediente de Empleados**.
 3. Abre **Empleados**, selecciona un colaborador y usa la pestaña **Expediente laboral**.
 
-El addon guarda la fecha de ingreso, puesto, división, estatus, indicador de chofer, número de seguridad social y observaciones. Los documentos (`comp_domic`, `const_sit_fiscal`, `descript_puesto`, `licencia_chof`, `curriculum`, `solicitud_empl`, `act_naci`, `ine`, `curp`, `rfc`, `contrato` y `acta_hechos`) se cargan desde la ficha y Odoo los almacena como adjuntos en la base de datos.
+El addon guarda la fecha de ingreso, puesto, división, estatus, indicador de chofer, número de seguridad social, RFC y observaciones. Los documentos (`comp_domic`, `const_sit_fiscal`, `descript_puesto`, `licencia_chof`, `solicitud_empl`, `act_naci`, `ine`, `curp`, `contrato` y `acta_hechos`) se cargan desde la ficha y Odoo los almacena como adjuntos en la base de datos.
 
 El campo `id` ya existe en Odoo como identificador interno del empleado. El nombre del colaborador corresponde al campo estándar `name`; el puesto estándar también se conserva y se incluye `puesto_expediente` para capturar el valor de la plantilla proporcionada.
 
