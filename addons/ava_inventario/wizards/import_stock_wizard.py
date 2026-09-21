@@ -139,7 +139,8 @@ class AvaImportStockWizard(models.TransientModel):
         fam_cache = {f.name.strip().upper(): f for f in Family.search([])}
         cls_cache = {c.name.strip().upper(): c for c in Class.search([])}
         lin_cache = {l.name.strip().upper(): l for l in Line.search([])}
-        partner_cache = {p.name.strip().upper(): p for p in Partner.search([("supplier_rank", ">", 0)])}
+        partner_domain = [("supplier_rank", ">", 0)] if "supplier_rank" in Partner._fields else []
+        partner_cache = {p.name.strip().upper(): p for p in Partner.search(partner_domain)}
 
         default_uom = self.env.ref("uom.product_uom_unit", raise_if_not_found=False) or Uom.search([], limit=1)
 
@@ -205,7 +206,10 @@ class AvaImportStockWizard(models.TransientModel):
                 if prov_val:
                     prov_rec = partner_cache.get(prov_val.upper())
                     if not prov_rec:
-                        prov_rec = Partner.create({"name": prov_val, "supplier_rank": 1})
+                        p_vals = {"name": prov_val}
+                        if "supplier_rank" in Partner._fields:
+                            p_vals["supplier_rank"] = 1
+                        prov_rec = Partner.create(p_vals)
                         partner_cache[prov_val.upper()] = prov_rec
 
                 tmpl_vals = {

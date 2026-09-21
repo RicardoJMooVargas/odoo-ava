@@ -134,7 +134,8 @@ class AvaImportCatalogWizard(models.TransientModel):
             line_cache[l.name.strip().upper()] = l
 
         partner_cache = {}
-        for p in Partner.search([("supplier_rank", ">", 0)]):
+        partner_domain = [("supplier_rank", ">", 0)] if "supplier_rank" in Partner._fields else []
+        for p in Partner.search(partner_domain):
             if p.ref:
                 partner_cache[p.ref.strip()] = p
             partner_cache[p.name.strip().upper()] = p
@@ -215,11 +216,13 @@ class AvaImportCatalogWizard(models.TransientModel):
                 key = prov_name.upper()
                 supplier_record = partner_cache.get(key) or partner_cache.get(prov_code)
                 if not supplier_record:
-                    supplier_record = Partner.create({
+                    p_vals = {
                         "name": prov_name,
                         "ref": prov_code or False,
-                        "supplier_rank": 1,
-                    })
+                    }
+                    if "supplier_rank" in Partner._fields:
+                        p_vals["supplier_rank"] = 1
+                    supplier_record = Partner.create(p_vals)
                     partner_cache[prov_name.upper()] = supplier_record
                     if prov_code:
                         partner_cache[prov_code] = supplier_record

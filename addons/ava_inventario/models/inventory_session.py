@@ -58,7 +58,6 @@ class AvaInventorySession(models.Model):
     partner_id = fields.Many2one(
         "res.partner",
         string="Filtrar por Proveedor",
-        domain=[("supplier_rank", ">", 0)],
     )
     ubicacion_recomendada = fields.Char(
         string="Filtrar por Ubicación Recomendada",

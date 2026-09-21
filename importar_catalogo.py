@@ -123,7 +123,7 @@ def main():
             line_cache[l["code"].strip()] = l["id"]
         line_cache[l["name"].strip().upper()] = l["id"]
 
-    partner_ids = models.execute_kw(args.db, uid, password, "res.partner", "search_read", [[("supplier_rank", ">", 0)]], {"fields": ["id", "ref", "name"]})
+    partner_ids = models.execute_kw(args.db, uid, password, "res.partner", "search_read", [[]], {"fields": ["id", "ref", "name"]})
     partner_cache = {}
     for p in partner_ids:
         if p.get("ref"):
@@ -193,7 +193,7 @@ def main():
         if prov_name:
             prov_id = partner_cache.get(prov_name.upper()) or partner_cache.get(prov_code)
             if not prov_id:
-                prov_id = models.execute_kw(args.db, uid, password, "res.partner", "create", [{"name": prov_name, "ref": prov_code or False, "supplier_rank": 1}])
+                prov_id = models.execute_kw(args.db, uid, password, "res.partner", "create", [{"name": prov_name, "ref": prov_code or False}])
                 partner_cache[prov_name.upper()] = prov_id
                 if prov_code:
                     partner_cache[prov_code] = prov_id
