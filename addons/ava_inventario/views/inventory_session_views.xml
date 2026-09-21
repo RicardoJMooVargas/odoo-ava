@@ -104,7 +104,7 @@
         <field name="name">ava.inventory.session.search</field>
         <field name="model">ava.inventory.session</field>
         <field name="arch" type="xml">
-            <search string="Buscar Sesiones">
+            <search>
                 <field name="name"/>
                 <field name="warehouse_id"/>
                 <field name="family_id"/>
@@ -113,7 +113,7 @@
                 <filter string="En Conteo" name="in_progress" domain="[('state', '=', 'in_progress')]"/>
                 <filter string="Borrador" name="draft" domain="[('state', '=', 'draft')]"/>
                 <filter string="Aplicadas" name="done" domain="[('state', '=', 'done')]"/>
-                <group expand="0" string="Agrupar por">
+                <group>
                     <filter string="Almacén" name="group_by_warehouse" context="{'group_by': 'warehouse_id'}"/>
                     <filter string="Estado" name="group_by_state" context="{'group_by': 'state'}"/>
                     <filter string="Fecha" name="group_by_date" context="{'group_by': 'date'}"/>
