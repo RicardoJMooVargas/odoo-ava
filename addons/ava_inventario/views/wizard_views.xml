@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ==================== WIZARD CATALOGO ==================== -->
+    <record id="view_ava_import_catalog_wizard_form" model="ir.ui.view">
+        <field name="name">ava.import.catalog.wizard.form</field>
+        <field name="model">ava.import.catalog.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Importar Catálogo de Productos AVA">
+                <group>
+                    <group string="Archivo a Importar">
+                        <field name="data_file" filename="filename"/>
+                        <field name="filename" invisible="1"/>
+                        <field name="encoding"/>
+                    </group>
+                    <group string="Opciones de Procesamiento">
+                        <field name="update_existing"/>
+                        <field name="create_missing"/>
+                    </group>
+                </group>
+                <div class="alert alert-info" role="alert">
+                    <strong>Formato esperado:</strong> Archivo CSV con columnas 
+                    <code>id, alterno, alterno2, descripcion, unidad, costoreal, p1..p6, familia, nombrefamilia, clase, nombreclase, linea, nombrelinea, proveedor, nombre</code>.
+                </div>
+                <footer>
+                    <button name="action_import" string="Importar Catálogo" type="object" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_ava_import_catalog_wizard" model="ir.actions.act_window">
+        <field name="name">Importar Catálogo de Productos</field>
+        <field name="res_model">ava.import.catalog.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- ==================== WIZARD EXISTENCIAS ==================== -->
+    <record id="view_ava_import_stock_wizard_form" model="ir.ui.view">
+        <field name="name">ava.import.stock.wizard.form</field>
+        <field name="model">ava.import.stock.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Importar Existencias por Almacén AVA">
+                <group>
+                    <group string="Archivo a Importar">
+                        <field name="data_file" filename="filename"/>
+                        <field name="filename" invisible="1"/>
+                        <field name="encoding"/>
+                    </group>
+                    <group string="Opciones de Ajuste">
+                        <field name="mode" widget="radio"/>
+                        <field name="create_missing_products"/>
+                        <field name="update_ubicacion"/>
+                        <field name="only_non_zero"/>
+                    </group>
+                </group>
+                <div class="alert alert-info" role="alert">
+                    <strong>Formato esperado:</strong> Archivo CSV con columnas 
+                    <code>Codigo, Descripcion, Unidad, Activo, AVA01, AVA02, AVA03, AVA04, Proveedor, Familia, Clase, Línea, Ubicación</code>.
+                    <br/>
+                    El sistema vinculará automáticamente las cantidades a los almacenes 
+                    <strong>AVA01</strong> (Principal), <strong>AVA02</strong>, <strong>AVA03</strong> y <strong>AVA04</strong>, y actualizará la ubicación recomendada.
+                </div>
+                <footer>
+                    <button name="action_import" string="Importar Existencias" type="object" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_ava_import_stock_wizard" model="ir.actions.act_window">
+        <field name="name">Importar Existencias por Almacén</field>
+        <field name="res_model">ava.import.stock.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- ==================== ACCIÓN SINCRONIZAR ALMACENES ==================== -->
+    <record id="action_server_sync_ava_warehouses" model="ir.actions.server">
+        <field name="name">Sincronizar Almacenes AVA (AVA01 - AVA04)</field>
+        <field name="model_id" ref="stock.model_stock_warehouse"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_sync_ava_warehouses()</field>
+    </record>
+</odoo>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extensión de Formulario de Producto -->
+    <record id="view_product_template_form_ava" model="ir.ui.view">
+        <field name="name">product.template.form.ava</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Clasificación AVA" name="ava_classification">
+                    <group>
+                        <group string="Clasificación del Producto">
+                            <field name="family_id" options="{'no_create_edit': False}"/>
+                            <field name="class_id" options="{'no_create_edit': False}"/>
+                            <field name="line_id" options="{'no_create_edit': False}"/>
+                            <field name="primary_supplier_id"/>
+                            <field name="cve_prod_serv"/>
+                            <field name="ubicacion_recomendada"/>
+                        </group>
+                        <group string="Costos y Márgenes (Catálogo)">
+                            <field name="costo_real"/>
+                            <field name="plista"/>
+                            <field name="dcto_prov"/>
+                        </group>
+                    </group>
+                    <group string="Niveles de Precios Catálogo AVA">
+                        <group>
+                            <field name="p1"/>
+                            <field name="p2"/>
+                            <field name="p3"/>
+                        </group>
+                        <group>
+                            <field name="p4"/>
+                            <field name="p5"/>
+                            <field name="p6"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Extensión de Lista de Producto -->
+    <record id="view_product_template_tree_ava" model="ir.ui.view">
+        <field name="name">product.template.list.ava</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="family_id" optional="show"/>
+                <field name="class_id" optional="hide"/>
+                <field name="line_id" optional="show"/>
+                <field name="primary_supplier_id" optional="show"/>
+                <field name="ubicacion_recomendada" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Extensión de Búsqueda de Producto -->
+    <record id="view_product_template_search_ava" model="ir.ui.view">
+        <field name="name">product.template.search.ava</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="family_id"/>
+                <field name="class_id"/>
+                <field name="line_id"/>
+                <field name="primary_supplier_id"/>
+                <field name="ubicacion_recomendada"/>
+                <field name="cve_prod_serv"/>
+            </xpath>
+            <xpath expr="//search" position="inside">
+                <group expand="0" string="Agrupar por Clasificación AVA">
+                    <filter string="Familia" name="group_by_family" context="{'group_by': 'family_id'}"/>
+                    <filter string="Clase" name="group_by_class" context="{'group_by': 'class_id'}"/>
+                    <filter string="Línea" name="group_by_line" context="{'group_by': 'line_id'}"/>
+                    <filter string="Proveedor Principal" name="group_by_supplier" context="{'group_by': 'primary_supplier_id'}"/>
+                    <filter string="Ubicación Recomendada" name="group_by_ubicacion" context="{'group_by': 'ubicacion_recomendada'}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

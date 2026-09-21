@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ==================== FAMILIA ==================== -->
+    <record id="view_product_family_tree" model="ir.ui.view">
+        <field name="name">product.family.list</field>
+        <field name="model">product.family</field>
+        <field name="arch" type="xml">
+            <list string="Familias de Productos">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="product_count"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_product_family_form" model="ir.ui.view">
+        <field name="name">product.family.form</field>
+        <field name="model">product.family</field>
+        <field name="arch" type="xml">
+            <form string="Familia de Productos">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_products" type="object" class="oe_stat_button" icon="fa-cubes">
+                            <field name="product_count" string="Productos" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archivado" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <group>
+                            <field name="code" placeholder="Ej. 3"/>
+                            <field name="name" placeholder="Ej. HERRAJES"/>
+                        </group>
+                        <group>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    <group string="Descripción">
+                        <field name="description" nolabel="1" placeholder="Detalles de la familia..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_product_family_search" model="ir.ui.view">
+        <field name="name">product.family.search</field>
+        <field name="model">product.family</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Familia">
+                <field name="name" filter_domain="['|', ('name', 'ilike', self), ('code', 'ilike', self)]"/>
+                <field name="code"/>
+                <filter string="Archivados" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_product_family" model="ir.actions.act_window">
+        <field name="name">Familias</field>
+        <field name="res_model">product.family</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_product_family_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crea una nueva Familia de Productos
+            </p>
+        </field>
+    </record>
+
+    <!-- ==================== CLASE ==================== -->
+    <record id="view_product_class_tree" model="ir.ui.view">
+        <field name="name">product.class.list</field>
+        <field name="model">product.class</field>
+        <field name="arch" type="xml">
+            <list string="Clases de Productos">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="product_count"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_product_class_form" model="ir.ui.view">
+        <field name="name">product.class.form</field>
+        <field name="model">product.class</field>
+        <field name="arch" type="xml">
+            <form string="Clase de Productos">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_products" type="object" class="oe_stat_button" icon="fa-cubes">
+                            <field name="product_count" string="Productos" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archivado" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <group>
+                            <field name="code" placeholder="Ej. 14"/>
+                            <field name="name" placeholder="Ej. HERRAJES"/>
+                        </group>
+                        <group>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    <group string="Descripción">
+                        <field name="description" nolabel="1" placeholder="Detalles de la clase..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_product_class_search" model="ir.ui.view">
+        <field name="name">product.class.search</field>
+        <field name="model">product.class</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Clase">
+                <field name="name" filter_domain="['|', ('name', 'ilike', self), ('code', 'ilike', self)]"/>
+                <field name="code"/>
+                <filter string="Archivados" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_product_class" model="ir.actions.act_window">
+        <field name="name">Clases</field>
+        <field name="res_model">product.class</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_product_class_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crea una nueva Clase de Productos
+            </p>
+        </field>
+    </record>
+
+    <!-- ==================== LÍNEA ==================== -->
+    <record id="view_product_line_tree" model="ir.ui.view">
+        <field name="name">product.line.list</field>
+        <field name="model">product.line</field>
+        <field name="arch" type="xml">
+            <list string="Líneas de Productos">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="product_count"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_product_line_form" model="ir.ui.view">
+        <field name="name">product.line.form</field>
+        <field name="model">product.line</field>
+        <field name="arch" type="xml">
+            <form string="Línea de Productos">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_products" type="object" class="oe_stat_button" icon="fa-cubes">
+                            <field name="product_count" string="Productos" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archivado" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <group>
+                            <field name="code" placeholder="Ej. 105"/>
+                            <field name="name" placeholder="Ej. COMENZA"/>
+                        </group>
+                        <group>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    <group string="Descripción">
+                        <field name="description" nolabel="1" placeholder="Detalles de la línea..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_product_line_search" model="ir.ui.view">
+        <field name="name">product.line.search</field>
+        <field name="model">product.line</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Línea">
+                <field name="name" filter_domain="['|', ('name', 'ilike', self), ('code', 'ilike', self)]"/>
+                <field name="code"/>
+                <filter string="Archivados" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_product_line" model="ir.actions.act_window">
+        <field name="name">Líneas</field>
+        <field name="res_model">product.line</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_product_line_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crea una nueva Línea de Productos
+            </p>
+        </field>
+    </record>
+</odoo>

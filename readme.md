@@ -7,7 +7,8 @@ Entorno Dockerizado para desarrollo y despliegue de módulos Odoo personalizados
 ```
 .
 ├── addons/               # Módulos propios (montados en /mnt/extra-addons)
-│   └── expediente_empleados/ # Addon de expedientes laborales
+│   ├── expediente_empleados/ # Addon de expedientes laborales
+│   └── ava_inventario/       # Addon de productos, almacenes AVA y conteos
 ├── config/
 │   └── odoo.conf         # Configuración de Odoo
 ├── Dockerfile
@@ -132,6 +133,47 @@ El campo `id` ya existe en Odoo como identificador interno del empleado. El nomb
 ### Nota de protección de datos
 
 Estos documentos contienen información personal sensible. En producción cambia `admin_passwd`, usa una contraseña fuerte para PostgreSQL, limita los usuarios del grupo de Recursos Humanos y configura copias de seguridad cifradas.
+
+---
+
+## AVA Inventario (Clasificación de Productos, Almacenes y Conteos Físicos)
+
+Módulo integral para la gestión de catálogo, almacenes e inventarios físicos de Armando Vidrios y Aluminios.
+
+### Características Principales:
+1. **Clasificación jerárquica sin variantes**: Modelos independientes para **Familia**, **Clase** y **Línea**, vinculados a los productos.
+2. **Proveedor principal y datos fiscales**: Soporte para `cve_prod_serv` (código SAT), código de barras (`alterno`), costo real y niveles de precios `p1` a `p6`.
+3. **Almacenes AVA**:
+   - `AVA01`: **PRINCIPAL ARMANDO VIDRIOS Y ALUMINIOS** (almacén primario de recepción y compras).
+   - `AVA02`: **BODEGA SECUNDARIA**
+   - `AVA03`: **BODEGA MADERA**
+   - `AVA04`: **BODEGA VINILOS**
+   - Sincronización y creación automática al instalar el módulo o mediante el botón en menú.
+4. **Importación asistida desde Odoo (Wizards)**:
+   - **Importar Catálogo CSV**: Desde `Inventario > AVA Inventario > Importaciones AVA > Importar Catálogo CSV` (soporta el formato de `PRODUCTOS CATALOGO.xlsx - Articulos.csv`).
+   - **Importar Existencias CSV**: Desde `Inventario > AVA Inventario > Importaciones AVA > Importar Existencias CSV` (soporta el formato de `LISTA DE EXISTENCIAS.xlsx - LISTA DE EXISTENCIAS.csv`, asignando stock a AVA01..AVA04 y la ubicación recomendada de la columna M).
+5. **Conteos Físicos Diarios**:
+   - En `Inventario > AVA Inventario > Conteos Físicos Diarios`, crea una sesión de conteo seleccionando el almacén y filtros por Familia, Línea, Clase o Proveedor.
+   - Presiona **"Iniciar Conteo"** para cargar la existencia teórica del sistema.
+   - Captura el conteo físico, visualiza las diferencias en piezas y valor monetario.
+   - Presiona **"Aplicar Ajuste a Odoo"** para conciliar las existencias automáticamente.
+6. **Ajustes de Inventario Nativos**:
+   - La pantalla estándar de ajustes de Odoo (`stock.quant`) cuenta con filtros y agrupaciones por Familia, Clase, Línea, Proveedor y Ubicación recomendada.
+
+### Scripts de Consola (CLI):
+```bash
+# Validar catálogo (simulación sin escribir en Odoo)
+python importar_catalogo.py --dry-run
+
+# Importar catálogo directamente vía XML-RPC
+python importar_catalogo.py --user admin@correo.com
+
+# Validar existencias (simulación)
+python importar_existencias.py --dry-run
+
+# Importar existencias directamente vía XML-RPC
+python importar_existencias.py --user admin@correo.com
+```
 
 ---
 

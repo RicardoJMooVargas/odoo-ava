@@ -1,0 +1,12 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_product_family_user,product.family.user,model_product_family,base.group_user,1,0,0,0
+access_product_family_stock,product.family.stock,model_product_family,stock.group_stock_user,1,1,1,1
+access_product_class_user,product.class.user,model_product_class,base.group_user,1,0,0,0
+access_product_class_stock,product.class.stock,model_product_class,stock.group_stock_user,1,1,1,1
+access_product_line_user,product.line.user,model_product_line,base.group_user,1,0,0,0
+access_product_line_stock,product.line.stock,model_product_line,stock.group_stock_user,1,1,1,1
+access_ava_inventory_session_stock_user,ava.inventory.session.user,model_ava_inventory_session,stock.group_stock_user,1,1,1,0
+access_ava_inventory_session_stock_manager,ava.inventory.session.manager,model_ava_inventory_session,stock.group_stock_manager,1,1,1,1
+access_ava_inventory_session_line_stock_user,ava.inventory.session.line.user,model_ava_inventory_session_line,stock.group_stock_user,1,1,1,1
+access_ava_import_catalog_wizard_stock,ava.import.catalog.wizard.stock,model_ava_import_catalog_wizard,stock.group_stock_user,1,1,1,1
+access_ava_import_stock_wizard_stock,ava.import.stock.wizard.stock,model_ava_import_stock_wizard,stock.group_stock_user,1,1,1,1

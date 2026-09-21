@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extensión de Lista de Ajustes de Inventario (stock.quant) -->
+    <record id="view_stock_quant_tree_inventory_editable_ava" model="ir.ui.view">
+        <field name="name">stock.quant.inventory.tree.ava</field>
+        <field name="model">stock.quant</field>
+        <field name="inherit_id" ref="stock.view_stock_quant_tree_inventory_editable"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_id']" position="after">
+                <field name="family_id" optional="show"/>
+                <field name="class_id" optional="hide"/>
+                <field name="line_id" optional="show"/>
+                <field name="supplier_id" optional="show"/>
+                <field name="ubicacion_recomendada" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Extensión de Búsqueda de stock.quant para filtros de conteo -->
+    <record id="quant_search_view_ava" model="ir.ui.view">
+        <field name="name">stock.quant.search.ava</field>
+        <field name="model">stock.quant</field>
+        <field name="inherit_id" ref="stock.quant_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_id']" position="after">
+                <field name="family_id"/>
+                <field name="class_id"/>
+                <field name="line_id"/>
+                <field name="supplier_id"/>
+                <field name="ubicacion_recomendada"/>
+            </xpath>
+            <xpath expr="//search" position="inside">
+                <group expand="0" string="Agrupar por Clasificación AVA">
+                    <filter string="Familia" name="group_by_family" context="{'group_by': 'family_id'}"/>
+                    <filter string="Clase" name="group_by_class" context="{'group_by': 'class_id'}"/>
+                    <filter string="Línea" name="group_by_line" context="{'group_by': 'line_id'}"/>
+                    <filter string="Proveedor" name="group_by_supplier" context="{'group_by': 'supplier_id'}"/>
+                    <filter string="Ubicación Recomendada" name="group_by_ubicacion" context="{'group_by': 'ubicacion_recomendada'}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

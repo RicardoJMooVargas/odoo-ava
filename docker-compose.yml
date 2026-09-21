@@ -23,7 +23,7 @@ services:
 
     # develop: --dev=all activa recarga automática y debug
     # production: vacío para máximo rendimiento
-    command: -u expediente_empleados ${ODOO_EXTRA_ARGS:---dev=all}
+    command: -u expediente_empleados,ava_inventario ${ODOO_EXTRA_ARGS:---dev=all}
 
     networks:
       - odoo-net

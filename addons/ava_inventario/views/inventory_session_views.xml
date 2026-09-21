@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista Formulario de Sesión de Conteo Físico -->
+    <record id="view_ava_inventory_session_form" model="ir.ui.view">
+        <field name="name">ava.inventory.session.form</field>
+        <field name="model">ava.inventory.session</field>
+        <field name="arch" type="xml">
+            <form string="Sesión de Conteo Físico">
+                <header>
+                    <button name="action_start" string="Iniciar Conteo" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_load_products" string="Recargar Productos" type="object" invisible="state not in ['draft', 'in_progress']"/>
+                    <button name="action_set_counted_equal_theoretical" string="Igualar Contado a Teórico" type="object" invisible="state != 'in_progress'"/>
+                    <button name="action_apply_inventory" string="Aplicar Ajuste a Odoo" type="object" class="btn-success" invisible="state != 'in_progress'"/>
+                    <button name="action_cancel" string="Cancelar" type="object" invisible="state not in ['draft', 'in_progress']"/>
+                    <button name="action_reset_draft" string="Volver a Borrador" type="object" invisible="state != 'cancel'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,in_progress,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Referencia"/>
+                        <h1>
+                            <field name="name" placeholder="Ej. CONTEO-2026-HERRAJES-AVA01"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Datos del Conteo">
+                            <field name="warehouse_id" options="{'no_create': True}" readonly="state != 'draft'"/>
+                            <field name="location_id" readonly="state != 'draft'"/>
+                            <field name="date" readonly="state in ['done', 'cancel']"/>
+                            <field name="user_id" widget="many2one_avatar_user" readonly="state in ['done', 'cancel']"/>
+                        </group>
+                        <group string="Filtros de Selección de Productos">
+                            <field name="family_id" readonly="state != 'draft'"/>
+                            <field name="class_id" readonly="state != 'draft'"/>
+                            <field name="line_id" readonly="state != 'draft'"/>
+                            <field name="partner_id" readonly="state != 'draft'"/>
+                            <field name="ubicacion_recomendada" placeholder="Ej. 1, 3, o Pasillo" readonly="state != 'draft'"/>
+                            <field name="only_with_stock" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+
+                    <group string="Resumen del Conteo" col="4">
+                        <field name="line_count"/>
+                        <field name="lines_with_difference"/>
+                        <field name="total_theoretical_qty"/>
+                        <field name="total_counted_qty"/>
+                        <field name="total_difference_qty"/>
+                        <field name="total_difference_value" widget="monetary"/>
+                    </group>
+
+                    <notebook>
+                        <page string="Líneas de Conteo Físico" name="lines">
+                            <field name="line_ids" readonly="state in ['done', 'cancel']">
+                                <list editable="bottom" decoration-danger="difference_qty != 0" decoration-success="difference_qty == 0 and is_counted">
+                                    <field name="ubicacion_recomendada" optional="show"/>
+                                    <field name="default_code" optional="show"/>
+                                    <field name="product_id" options="{'no_create': True}"/>
+                                    <field name="family_id" optional="hide"/>
+                                    <field name="line_id" optional="hide"/>
+                                    <field name="supplier_id" optional="hide"/>
+                                    <field name="uom_id" optional="show"/>
+                                    <field name="theoretical_qty"/>
+                                    <field name="counted_qty"/>
+                                    <field name="difference_qty"/>
+                                    <field name="standard_price" optional="show"/>
+                                    <field name="difference_value" optional="show"/>
+                                    <field name="is_counted" widget="boolean_toggle"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notas" name="notes">
+                            <field name="notes" placeholder="Comentarios u observaciones sobre este conteo físico..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista Lista de Sesiones de Conteo -->
+    <record id="view_ava_inventory_session_tree" model="ir.ui.view">
+        <field name="name">ava.inventory.session.list</field>
+        <field name="model">ava.inventory.session</field>
+        <field name="arch" type="xml">
+            <list string="Sesiones de Conteo Físico" decoration-info="state == 'draft'" decoration-warning="state == 'in_progress'" decoration-success="state == 'done'" decoration-muted="state == 'cancel'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="warehouse_id"/>
+                <field name="family_id" optional="show"/>
+                <field name="line_id" optional="show"/>
+                <field name="partner_id" optional="show"/>
+                <field name="line_count"/>
+                <field name="lines_with_difference"/>
+                <field name="total_difference_qty"/>
+                <field name="total_difference_value"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'in_progress'" decoration-success="state == 'done'" decoration-danger="state == 'cancel'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Vista de Búsqueda de Sesiones -->
+    <record id="view_ava_inventory_session_search" model="ir.ui.view">
+        <field name="name">ava.inventory.session.search</field>
+        <field name="model">ava.inventory.session</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Sesiones">
+                <field name="name"/>
+                <field name="warehouse_id"/>
+                <field name="family_id"/>
+                <field name="line_id"/>
+                <field name="partner_id"/>
+                <filter string="En Conteo" name="in_progress" domain="[('state', '=', 'in_progress')]"/>
+                <filter string="Borrador" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Aplicadas" name="done" domain="[('state', '=', 'done')]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Almacén" name="group_by_warehouse" context="{'group_by': 'warehouse_id'}"/>
+                    <filter string="Estado" name="group_by_state" context="{'group_by': 'state'}"/>
+                    <filter string="Fecha" name="group_by_date" context="{'group_by': 'date'}"/>
+                    <filter string="Familia" name="group_by_family" context="{'group_by': 'family_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Acción de Ventana -->
+    <record id="action_ava_inventory_session" model="ir.actions.act_window">
+        <field name="name">Conteos Físicos Diarios</field>
+        <field name="res_model">ava.inventory.session</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_ava_inventory_session_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Inicia un nuevo Conteo Físico por Almacén y Clasificación AVA
+            </p>
+            <p>
+                Permite cargar artículos por Familia, Línea, Clase o Proveedor, comparar la existencia teórica con el conteo físico y aplicar ajustes directamente.
+            </p>
+        </field>
+    </record>
+</odoo>
