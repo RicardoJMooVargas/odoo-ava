@@ -112,7 +112,13 @@ class AvaImportCatalogWizard(models.TransientModel):
         Class = self.env["product.class"]
         Line = self.env["product.line"]
         Partner = self.env["res.partner"]
-        ProductTemplate = self.env["product.template"].with_context(active_test=False)
+        ProductTemplate = self.env["product.template"].with_context(
+            active_test=False,
+            mail_create_nosubscribe=True,
+            mail_create_nolog=True,
+            mail_notrack=True,
+            tracking_disable=True,
+        )
         SupplierInfo = self.env["product.supplierinfo"]
 
         fam_cache = {}
@@ -149,6 +155,42 @@ class AvaImportCatalogWizard(models.TransientModel):
         created_count = 0
         updated_count = 0
         skipped_count = 0
+
+        # Lote de creación para alta velocidad
+        batch_to_create = []
+
+        def flush_create_batch():
+            nonlocal created_count
+            if not batch_to_create:
+                return
+            vals_list = [item[0] for item in batch_to_create]
+            new_tmpls = ProductTemplate.create(vals_list)
+
+            s_vals_list = []
+            has_discount = "discount" in SupplierInfo._fields
+            for tmpl, item in zip(new_tmpls, batch_to_create):
+                code = item[1]
+                supplier_rec = item[2]
+                cost = item[3]
+                dcto = item[4]
+                tmpl_cache[code] = tmpl
+                created_count += 1
+
+                if supplier_rec:
+                    s_vals = {
+                        "partner_id": supplier_rec.id,
+                        "product_tmpl_id": tmpl.id,
+                        "price": cost,
+                    }
+                    if has_discount:
+                        s_vals["discount"] = dcto
+                    s_vals_list.append(s_vals)
+
+            if s_vals_list:
+                SupplierInfo.create(s_vals_list)
+
+            batch_to_create.clear()
+            self.env.cr.commit()
 
         for row in reader:
             code = row.get("id", "").strip()
@@ -292,33 +334,37 @@ class AvaImportCatalogWizard(models.TransientModel):
                 if self.update_existing:
                     tmpl.write(vals)
                     updated_count += 1
+                    if supplier_record:
+                        supplier_info = SupplierInfo.search([
+                            ("product_tmpl_id", "=", tmpl.id),
+                            ("partner_id", "=", supplier_record.id),
+                        ], limit=1)
+                        s_vals = {
+                            "partner_id": supplier_record.id,
+                            "product_tmpl_id": tmpl.id,
+                            "price": cost_real,
+                        }
+                        if "discount" in SupplierInfo._fields:
+                            s_vals["discount"] = dctoprov
+                        if supplier_info:
+                            supplier_info.write(s_vals)
+                        else:
+                            SupplierInfo.create(s_vals)
+
+                    if updated_count % 100 == 0:
+                        self.env.cr.commit()
                 else:
                     skipped_count += 1
             elif self.create_missing:
-                tmpl = ProductTemplate.create(vals)
-                tmpl_cache[code] = tmpl
-                created_count += 1
+                batch_to_create.append((vals, code, supplier_record, cost_real, dctoprov))
+                if len(batch_to_create) >= 100:
+                    flush_create_batch()
             else:
                 skipped_count += 1
-                continue
 
-            # 8. Sincronizar info de proveedor (product.supplierinfo)
-            if tmpl and supplier_record:
-                supplier_info = SupplierInfo.search([
-                    ("product_tmpl_id", "=", tmpl.id),
-                    ("partner_id", "=", supplier_record.id),
-                ], limit=1)
-                s_vals = {
-                    "partner_id": supplier_record.id,
-                    "product_tmpl_id": tmpl.id,
-                    "price": cost_real,
-                }
-                if "discount" in SupplierInfo._fields:
-                    s_vals["discount"] = dctoprov
-                if supplier_info:
-                    supplier_info.write(s_vals)
-                else:
-                    SupplierInfo.create(s_vals)
+        # Vaciar lote final pendiente
+        flush_create_batch()
+        self.env.cr.commit()
 
         _logger.info(
             "Importación de catálogo terminada: Creados %d, Actualizados %d, Omitidos %d",

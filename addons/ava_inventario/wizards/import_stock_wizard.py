@@ -124,8 +124,20 @@ class AvaImportStockWizard(models.TransientModel):
             raise UserError(_("No se encontró la columna requerida 'Codigo' en el archivo."))
 
         # Cachés en memoria
-        ProductProduct = self.env["product.product"].with_context(active_test=False)
-        ProductTemplate = self.env["product.template"].with_context(active_test=False)
+        ProductProduct = self.env["product.product"].with_context(
+            active_test=False,
+            mail_create_nosubscribe=True,
+            mail_create_nolog=True,
+            mail_notrack=True,
+            tracking_disable=True,
+        )
+        ProductTemplate = self.env["product.template"].with_context(
+            active_test=False,
+            mail_create_nosubscribe=True,
+            mail_create_nolog=True,
+            mail_notrack=True,
+            tracking_disable=True,
+        )
         Family = self.env["product.family"]
         Class = self.env["product.class"]
         Line = self.env["product.line"]
@@ -159,7 +171,9 @@ class AvaImportStockWizard(models.TransientModel):
 
         Quant = self.env["stock.quant"].with_context(inventory_mode=True)
 
+        row_idx = 0
         for row in reader:
+            row_idx += 1
             code = row.get(col_codigo, "").strip() if col_codigo else ""
             if not code:
                 continue
@@ -285,6 +299,11 @@ class AvaImportStockWizard(models.TransientModel):
                         "is_counted": True,
                         "standard_price": product.standard_price or 0.0,
                     }))
+
+            if row_idx % 100 == 0:
+                self.env.cr.commit()
+
+        self.env.cr.commit()
 
         # Si el modo fue create_session, crear una sesión por cada almacén que tenga líneas
         if self.mode == "create_session":
