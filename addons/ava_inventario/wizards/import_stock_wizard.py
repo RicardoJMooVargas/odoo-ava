@@ -222,10 +222,11 @@ class AvaImportStockWizard(models.TransientModel):
                     "primary_supplier_id": prov_rec.id if prov_rec else False,
                     "ubicacion_recomendada": ubic_val or False,
                     "uom_id": default_uom.id if default_uom else False,
-                    "uom_po_id": default_uom.id if default_uom else False,
                     "type": "consu",
                 }
-                if hasattr(ProductTemplate, "is_storable"):
+                if "uom_po_id" in ProductTemplate._fields and default_uom:
+                    tmpl_vals["uom_po_id"] = default_uom.id
+                if "is_storable" in ProductTemplate._fields:
                     tmpl_vals["is_storable"] = True
 
                 tmpl = ProductTemplate.create(tmpl_vals)

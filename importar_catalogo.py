@@ -226,7 +226,6 @@ def main():
             "type": "consu",
             "is_storable": True,
             "uom_id": default_uom_id,
-            "uom_po_id": default_uom_id,
         }
 
         tmpl_id = tmpl_cache.get(code)

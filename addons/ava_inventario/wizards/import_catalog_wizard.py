@@ -258,7 +258,6 @@ class AvaImportCatalogWizard(models.TransientModel):
                 "barcode": barcode,
                 "cve_prod_serv": cve_sat,
                 "uom_id": uom.id if uom else False,
-                "uom_po_id": uom.id if uom else False,
                 "family_id": family_record.id if family_record else False,
                 "class_id": class_record.id if class_record else False,
                 "line_id": line_record.id if line_record else False,
@@ -282,7 +281,9 @@ class AvaImportCatalogWizard(models.TransientModel):
                 "m6": m6,
                 "type": "consu",  # En Odoo 19 con is_storable se define como consu
             }
-            if hasattr(ProductTemplate, "is_storable"):
+            if "uom_po_id" in ProductTemplate._fields and uom:
+                vals["uom_po_id"] = uom.id
+            if "is_storable" in ProductTemplate._fields:
                 vals["is_storable"] = True
 
             # 7. Crear o actualizar producto
@@ -311,8 +312,9 @@ class AvaImportCatalogWizard(models.TransientModel):
                     "partner_id": supplier_record.id,
                     "product_tmpl_id": tmpl.id,
                     "price": cost_real,
-                    "discount": dctoprov,
                 }
+                if "discount" in SupplierInfo._fields:
+                    s_vals["discount"] = dctoprov
                 if supplier_info:
                     supplier_info.write(s_vals)
                 else:
