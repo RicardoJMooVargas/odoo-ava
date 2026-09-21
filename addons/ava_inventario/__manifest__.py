@@ -22,6 +22,7 @@ Módulo personalizado para Armando Vidrios y Aluminios (AVA):
     "author": "Ricardo Moo / AVA",
     "depends": [
         "base",
+        "mail",
         "product",
         "stock",
     ],
