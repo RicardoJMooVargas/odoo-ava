@@ -39,6 +39,8 @@ def sync_ava_warehouses(env):
     ]
 
     wh_map = {}
+    has_buy_resupply = 'buy_to_resupply' in Warehouse._fields
+    has_resupply_wh = 'resupply_wh_ids' in Warehouse._fields
 
     # 1. Buscar si ya existe AVA01 o un almacén por defecto (WH)
     ava01_wh = Warehouse.search([('code', '=', 'AVA01'), ('company_id', '=', company.id)], limit=1)
@@ -47,29 +49,39 @@ def sync_ava_warehouses(env):
         default_wh = Warehouse.search([('code', '=', 'WH'), ('company_id', '=', company.id)], limit=1)
         if default_wh:
             _logger.info("Renombrando almacén por defecto 'WH' a 'AVA01' - 'PRINCIPAL ARMANDO VIDRIOS Y ALUMINIOS'")
-            default_wh.write({
+            vals = {
                 'code': 'AVA01',
                 'name': 'PRINCIPAL ARMANDO VIDRIOS Y ALUMINIOS',
-                'reception_steps': 'one_step',
-                'delivery_steps': 'ship_only',
-                'buy_to_resupply': True,
-            })
+            }
+            if 'reception_steps' in Warehouse._fields:
+                vals['reception_steps'] = 'one_step'
+            if 'delivery_steps' in Warehouse._fields:
+                vals['delivery_steps'] = 'ship_only'
+            if has_buy_resupply:
+                vals['buy_to_resupply'] = True
+            default_wh.write(vals)
             ava01_wh = default_wh
         else:
             _logger.info("Creando almacén AVA01 - PRINCIPAL ARMANDO VIDRIOS Y ALUMINIOS")
-            ava01_wh = Warehouse.create({
+            vals = {
                 'code': 'AVA01',
                 'name': 'PRINCIPAL ARMANDO VIDRIOS Y ALUMINIOS',
                 'company_id': company.id,
-                'reception_steps': 'one_step',
-                'delivery_steps': 'ship_only',
-                'buy_to_resupply': True,
-            })
+            }
+            if 'reception_steps' in Warehouse._fields:
+                vals['reception_steps'] = 'one_step'
+            if 'delivery_steps' in Warehouse._fields:
+                vals['delivery_steps'] = 'ship_only'
+            if has_buy_resupply:
+                vals['buy_to_resupply'] = True
+            ava01_wh = Warehouse.create(vals)
     else:
-        ava01_wh.write({
+        vals = {
             'name': 'PRINCIPAL ARMANDO VIDRIOS Y ALUMINIOS',
-            'buy_to_resupply': True,
-        })
+        }
+        if has_buy_resupply:
+            vals['buy_to_resupply'] = True
+        ava01_wh.write(vals)
 
     wh_map['AVA01'] = ava01_wh
 
@@ -87,10 +99,12 @@ def sync_ava_warehouses(env):
                 'code': code,
                 'name': name,
                 'company_id': company.id,
-                'reception_steps': 'one_step',
-                'delivery_steps': 'ship_only',
             }
-            if hasattr(Warehouse, 'resupply_wh_ids') and ava01_wh:
+            if 'reception_steps' in Warehouse._fields:
+                vals['reception_steps'] = 'one_step'
+            if 'delivery_steps' in Warehouse._fields:
+                vals['delivery_steps'] = 'ship_only'
+            if has_resupply_wh and ava01_wh:
                 vals['resupply_wh_ids'] = [(4, ava01_wh.id)]
             wh = Warehouse.create(vals)
         wh_map[code] = wh
