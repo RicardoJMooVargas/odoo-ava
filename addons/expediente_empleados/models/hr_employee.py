@@ -1,4 +1,5 @@
-from odoo import fields, models
+# -*- coding: utf-8 -*-
+from odoo import api, fields, models, _
 
 
 class HrEmployee(models.Model):
@@ -6,6 +7,15 @@ class HrEmployee(models.Model):
 
     fecha_ingreso = fields.Date(string="Fecha de ingreso")
     es_chofer = fields.Boolean(string="Es chofer")
+    es_agente_ventas = fields.Boolean(
+        string="Es agente de ventas",
+        default=False,
+        help="Activa el historial mensual de metas comerciales y observaciones legales.",
+    )
+    nombre_alias = fields.Char(
+        string="Nombre Alias",
+        help="Alias con el que se identifica al vendedor en AVA_API (campo 'nombreVendedor' en /AVA/ventas).",
+    )
     observaciones_expediente = fields.Text(string="Observaciones")
     division = fields.Char(string="División")
     estatus_expediente = fields.Selection(
@@ -20,6 +30,26 @@ class HrEmployee(models.Model):
     no_seguro_social = fields.Char(string="No. de seguridad social")
     rfc = fields.Char(string="RFC")
     puesto_expediente = fields.Char(string="Puesto del expediente")
+
+    # ── Historial de Metas Comerciales y Observaciones Legales ───────────────
+    sales_scheme_ids = fields.One2many(
+        "hr.sales.scheme",
+        "employee_id",
+        string="Esquemas Mensuales de Metas",
+    )
+    legal_observation_ids = fields.One2many(
+        "hr.sales.legal.observation",
+        "employee_id",
+        string="Historial de Observaciones Legales",
+    )
+    sales_scheme_count = fields.Integer(
+        string="Esquemas Mensuales",
+        compute="_compute_sales_counts",
+    )
+    legal_observation_count = fields.Integer(
+        string="Observaciones Legales",
+        compute="_compute_sales_counts",
+    )
 
     # ── Documentos principales ────────────────────────────────────────────────
     comp_domic_ids = fields.Many2many(
@@ -94,3 +124,31 @@ class HrEmployee(models.Model):
         "attachment_id",
         string="Acta de hechos",
     )
+
+    @api.depends("sales_scheme_ids", "legal_observation_ids")
+    def _compute_sales_counts(self):
+        for emp in self:
+            emp.sales_scheme_count = len(emp.sales_scheme_ids)
+            emp.legal_observation_count = len(emp.legal_observation_ids)
+
+    def action_view_sales_schemes(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Esquemas Mensuales - %s") % self.name,
+            "res_model": "hr.sales.scheme",
+            "view_mode": "list,form",
+            "domain": [("employee_id", "=", self.id)],
+            "context": {"default_employee_id": self.id},
+        }
+
+    def action_view_legal_observations(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Observaciones Legales - %s") % self.name,
+            "res_model": "hr.sales.legal.observation",
+            "view_mode": "list,form",
+            "domain": [("employee_id", "=", self.id)],
+            "context": {"default_employee_id": self.id},
+        }

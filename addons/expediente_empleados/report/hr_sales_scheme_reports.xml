@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         1. ACCIONES DE REPORTE PDF
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="action_report_hr_sales_scheme" model="ir.actions.report">
+        <field name="name">Imprimir Esquema Mensual de Metas (PDF)</field>
+        <field name="model">hr.sales.scheme</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">expediente_empleados.report_hr_sales_scheme_document</field>
+        <field name="report_file">expediente_empleados.report_hr_sales_scheme_document</field>
+        <field name="print_report_name">'ESQUEMA_METAS_%s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_hr_sales_scheme"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <record id="action_report_hr_sales_legal_observation" model="ir.actions.report">
+        <field name="name">Imprimir Acta de Observación y Mejora - Sección VIII (PDF)</field>
+        <field name="model">hr.sales.legal.observation</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">expediente_empleados.report_hr_sales_legal_observation_document</field>
+        <field name="report_file">expediente_empleados.report_hr_sales_legal_observation_document</field>
+        <field name="print_report_name">'ACTA_OBSERVACION_%s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_hr_sales_legal_observation"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         2. PLANTILLA QWEB: ESQUEMA MENSUAL DE METAS COMERCIALES
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <template id="report_hr_sales_scheme_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.basic_layout">
+                    <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 13px; line-height: 1.5; color: #000;">
+                        <h4 style="text-align: center; font-weight: bold; margin-bottom: 18px;">
+                            ESQUEMA MENSUAL DE METAS COMERCIALES, EVALUACIÓN DE DESEMPEÑO E INCENTIVOS
+                        </h4>
+
+                        <div style="text-align: right; margin-bottom: 20px;">
+                            <strong>ARMANDO VIDRIOS Y ALUMINIOS S.A. DE C.V.</strong><br/>
+                            <strong>RFC:</strong> AVA2502042E4.<br/>
+                            <strong>Domicilio:</strong> Calle 8, número 32, entre calle 5 y calle 1<br/>
+                            Colonia Carmelo, C.P. 24075, Campeche, Campeche.
+                        </div>
+
+                        <h5 style="text-align: center; font-weight: bold; margin-top: 16px; margin-bottom: 12px;">
+                            I. DATOS GENERALES DE LA TRABAJADORA
+                        </h5>
+                        <p style="margin-bottom: 14px;">
+                            <strong>Nombre de la persona trabajadora:</strong>
+                            <span style="text-decoration: underline;" t-field="o.employee_id.name"/><br/>
+                            <strong>Puesto:</strong> <span t-field="o.job_title"/><br/>
+                            <strong>Área:</strong> <span t-field="o.area_name"/><br/>
+                            <strong>Responsable del área:</strong>
+                            <span style="text-decoration: underline;" t-field="o.manager_id.name"/><br/>
+                            <strong>Fecha de comunicación del presente esquema:</strong>
+                            <span style="text-decoration: underline;" t-field="o.communication_date"/><br/>
+                            <strong>Periodo de evaluación:</strong>
+                            <strong style="text-decoration: underline;" t-field="o.period_display"/>
+                        </p>
+
+                        <h5 style="text-align: center; font-weight: bold; margin-top: 16px; margin-bottom: 12px;">
+                            II. OBJETO
+                        </h5>
+                        <div style="text-align: justify; margin-bottom: 14px; white-space: pre-line;" t-field="o.objective_text"/>
+
+                        <h5 style="text-align: center; font-weight: bold; margin-top: 16px; margin-bottom: 12px;">
+                            III. META COMERCIAL INDIVIDUAL
+                        </h5>
+                        <p>Para el periodo indicado, se establece la siguiente meta comercial:</p>
+                        <p>
+                            <strong>Meta mensual de ventas: $</strong>
+                            <strong style="text-decoration: underline;">
+                                <span t-esc="'{:,.2f}'.format(o.target_amount)"/>
+                            </strong><br/>
+                            <strong>Importe en letra:</strong>
+                            <strong style="text-decoration: underline;" t-field="o.target_amount_text"/>
+                        </p>
+                        <p style="text-align: justify;">
+                            Para efectos de la evaluación, las ventas se contabilizarán conforme a los registros comerciales de
+                            LA EMPRESA y a los criterios de atribución previamente establecidos (Base seleccionada:
+                            <strong>
+                                <t t-if="o.attribution_criteria == 'otro'">
+                                    <span t-field="o.attribution_criteria_other"/>
+                                </t>
+                                <t t-else="">
+                                    <span t-field="o.attribution_criteria"/>
+                                </t>
+                            </strong>).
+                        </p>
+                        <p style="text-align: justify;">
+                            Las operaciones compartidas, cancelaciones, devoluciones y demás incidencias se tratarán
+                            conforme a las reglas de cálculo comunicadas para este periodo (excluyendo notas de devolución
+                            y devoluciones de producto), respetando las comisiones que legalmente se hayan generado.
+                        </p>
+                        <p style="text-align: justify;">
+                            La meta y las condiciones económicas deberán comunicarse antes del inicio del periodo. No podrán
+                            modificarse retroactivamente en perjuicio de la persona trabajadora.
+                        </p>
+
+                        <h5 style="text-align: center; font-weight: bold; margin-top: 16px; margin-bottom: 12px;">
+                            IV. NIVELES DE PRODUCCIÓN Y EVALUACIÓN
+                        </h5>
+                        <p>Con la finalidad de contar con parámetros objetivos de evaluación, se establecen los siguientes niveles de producción para el periodo:</p>
+                        <ol style="text-align: justify;">
+                            <li style="margin-bottom: 10px;">
+                                <strong>Producción críticamente baja.</strong> Se considerará producción críticamente baja cuando las
+                                ventas mensuales sean inferiores a <strong>$<span style="text-decoration: underline;" t-esc="'{:,.2f}'.format(o.threshold_critical)"/></strong>.<br/>
+                                Este nivel activará una revisión específica del desempeño para identificar las causas de la
+                                desviación, verificar las actividades comerciales realizadas y, en su caso, establecer medidas de mejora.
+                            </li>
+                            <li style="margin-bottom: 10px;">
+                                <strong>Producción inferior a la meta.</strong> Se considerará producción inferior a la meta cuando las
+                                ventas sean iguales o superiores a <strong>$<span style="text-decoration: underline;" t-esc="'{:,.2f}'.format(o.threshold_below_min)"/></strong>,
+                                pero inferiores a la meta mensual de <strong>$<span style="text-decoration: underline;" t-esc="'{:,.2f}'.format(o.threshold_below_max)"/></strong>.
+                            </li>
+                            <li style="margin-bottom: 10px;">
+                                <strong>Meta alcanzada.</strong> Se considerará alcanzada la meta cuando las ventas computables sean
+                                iguales a <strong>$<span style="text-decoration: underline;" t-esc="'{:,.2f}'.format(o.threshold_reached)"/></strong>.
+                            </li>
+                            <li style="margin-bottom: 10px;">
+                                <strong>Meta superada.</strong> Se considerará superada la meta cuando las ventas computables excedan
+                                de <strong>$<span style="text-decoration: underline;" t-esc="'{:,.2f}'.format(o.threshold_exceeded)"/></strong>.
+                            </li>
+                        </ol>
+                        <p style="text-align: justify;">
+                            Los resultados deberán analizarse considerando las condiciones comerciales, la cartera asignada,
+                            la disponibilidad de productos y los demás factores que razonablemente puedan influir en las ventas.
+                        </p>
+
+                        <h5 style="text-align: center; font-weight: bold; margin-top: 16px; margin-bottom: 12px;">
+                            V. ESQUEMA DE INCENTIVOS ECONÓMICOS
+                        </h5>
+                        <p style="text-align: justify;">
+                            Además del sueldo base correspondiente a su puesto, la persona trabajadora tendrá derecho a los
+                            incentivos variables que se generen conforme a las condiciones previamente establecidas para este periodo.
+                        </p>
+                        <p>Los incentivos aplicables serán los siguientes:</p>
+                        <table class="table table-sm table-bordered" style="width: 100%; border: 1px solid #000; margin-bottom: 12px;">
+                            <thead>
+                                <tr style="text-align: center; font-weight: bold;">
+                                    <th style="border: 1px solid #000; padding: 6px;">Nivel de cumplimiento</th>
+                                    <th style="border: 1px solid #000; padding: 6px;">Ventas del periodo</th>
+                                    <th style="border: 1px solid #000; padding: 6px;">Comisión</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.incentive_line_ids" t-as="line">
+                                    <tr>
+                                        <td style="border: 1px solid #000; padding: 6px;"><span t-field="line.compliance_level"/></td>
+                                        <td style="border: 1px solid #000; padding: 6px;"><span t-field="line.period_sales_text"/></td>
+                                        <td style="border: 1px solid #000; padding: 6px;"><span t-field="line.commission_text"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                        <p style="text-align: justify;">
+                            El sueldo base no estará condicionado al cumplimiento de las metas comerciales. Los incentivos
+                            que tengan naturaleza salarial y se hayan generado deberán reconocerse y pagarse conforme a las
+                            condiciones aplicables y a la legislación laboral, sin descuentos o retención alguna.
+                        </p>
+
+                        <h5 style="text-align: center; font-weight: bold; margin-top: 16px; margin-bottom: 12px;">
+                            VI. SEGUIMIENTO SEMANAL DEL DESEMPEÑO
+                        </h5>
+                        <p style="text-align: justify;">
+                            Durante el periodo mensual, la persona responsable del área realizará revisiones semanales,
+                            preferentemente, con el propósito de conocer el avance comercial, detectar desviaciones y
+                            establecer acciones oportunas de mejora. Las revisiones comprenderán, según corresponda:
+                            a) La meta mensual y el importe de ventas acumuladas; b) El porcentaje de cumplimiento alcanzado;
+                            c) Las cotizaciones, oportunidades comerciales y pedidos en seguimiento; d) Las actividades realizadas
+                            y los obstáculos identificados; e) Las acciones de mejora acordadas y los apoyos que, en su caso,
+                            proporcione LA EMPRESA. Las revisiones podrán documentarse mediante reportes comerciales, correos electrónicos,
+                            mensajería de whatsapp, minutas o formatos internos.
+                        </p>
+
+                        <h5 style="text-align: center; font-weight: bold; margin-top: 16px; margin-bottom: 12px;">
+                            VII. OBLIGACIONES COMERCIALES
+                        </h5>
+                        <p>Durante el periodo de evaluación, la persona trabajadora deberá:</p>
+                        <p style="margin-left: 20px; text-align: justify;">
+                            a) Realizar diligentemente las actividades de promoción y venta correspondientes a su puesto.<br/>
+                            b) Atender y dar seguimiento oportuno a los clientes asignados.<br/>
+                            c) Dar seguimiento a cotizaciones, pedidos y oportunidades comerciales bajo su responsabilidad.<br/>
+                            d) Registrar de manera veraz las gestiones realizadas y los resultados obtenidos.<br/>
+                            e) Informar oportunamente sobre obstáculos que puedan afectar el desarrollo de sus actividades comerciales.<br/>
+                            f) Atender las instrucciones de trabajo lícitas y participar en las reuniones de seguimiento que correspondan.<br/>
+                            g) Colaborar en las acciones de mejora acordadas dentro del ámbito de sus responsabilidades.
+                        </p>
+
+                        <h5 style="text-align: center; font-weight: bold; margin-top: 16px; margin-bottom: 12px;">
+                            VIII. RESULTADOS, DESVIACIONES Y MEDIDAS DE MEJORA
+                        </h5>
+                        <p style="text-align: justify;">
+                            Cuando se identifique un nivel de producción críticamente bajo, un incumplimiento de las actividades
+                            comerciales asignadas o una desviación relevante respecto del desempeño esperado, LA EMPRESA podrá
+                            documentar los hechos y establecer medidas razonables de mejora. En su caso, se precisarán:
+                            los resultados obtenidos y el periodo evaluado; los hechos y datos que sustentan la evaluación;
+                            las actividades que deberán corregirse o mejorarse; los objetivos y plazos para verificar los avances;
+                            y las observaciones de la persona trabajadora. La persona trabajadora podrá manifestar por escrito las
+                            circunstancias que expliquen sus resultados y aportar la información que considere pertinente.
+                        </p>
+
+                        <h5 style="text-align: center; font-weight: bold; margin-top: 16px; margin-bottom: 12px;">
+                            X. ALCANCE Y ACEPTACIÓN
+                        </h5>
+                        <p style="text-align: justify;">
+                            El presente documento complementa los mecanismos de organización y evaluación comercial de
+                            LA EMPRESA y deberá interpretarse conjuntamente con el contrato individual de trabajo y las
+                            disposiciones legales aplicables.
+                        </p>
+                        <p style="text-align: justify;">
+                            Las partes manifiestan que han tenido oportunidad de leer el documento, que conocen su contenido
+                            y que reciben una copia firmada del mismo. La firma acredita el conocimiento y la aceptación de las
+                            condiciones expresamente convenidas para el periodo señalado, sin perjuicio de los derechos
+                            irrenunciables de la persona trabajadora.
+                            <strong t-esc="o._format_signed_date_legal()"/>
+                        </p>
+
+                        <table style="width: 100%; margin-top: 55px; text-align: center; border: none;">
+                            <tr>
+                                <td style="width: 50%; padding: 20px;">
+                                    <strong>EL TRABAJADOR</strong><br/><br/><br/>
+                                    _____________________________________<br/>
+                                    <span t-field="o.employee_id.name"/>
+                                </td>
+                                <td style="width: 50%; padding: 20px;">
+                                    <strong>LA EMPRESA</strong><br/><br/><br/>
+                                    _____________________________________<br/>
+                                    <span t-field="o.manager_id.name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 50%; padding: 25px;">
+                                    <strong>TESTIGO</strong><br/><br/><br/>
+                                    _____________________________________<br/>
+                                    <span t-field="o.witness_1"/>
+                                </td>
+                                <td style="width: 50%; padding: 25px;">
+                                    <strong>TESTIGO</strong><br/><br/><br/>
+                                    _____________________________________<br/>
+                                    <span t-field="o.witness_2"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         3. PLANTILLA QWEB: ACTA DE OBSERVACIONES Y MEDIDAS DE MEJORA (SECC. VIII)
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <template id="report_hr_sales_legal_observation_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.basic_layout">
+                    <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 13px; line-height: 1.5; color: #000;">
+                        <h4 style="text-align: center; font-weight: bold; margin-bottom: 14px;">
+                            DOCUMENTACIÓN DE RESULTADOS, DESVIACIONES Y MEDIDAS DE MEJORA (SECCIÓN VIII)
+                        </h4>
+
+                        <div style="text-align: right; margin-bottom: 18px;">
+                            <strong>ARMANDO VIDRIOS Y ALUMINIOS S.A. DE C.V.</strong><br/>
+                            <strong>RFC:</strong> AVA2502042E4.<br/>
+                            <strong>Folio:</strong> <span t-field="o.name"/><br/>
+                            <strong>Fecha:</strong> <span t-field="o.date"/>
+                        </div>
+
+                        <p>
+                            <strong>Nombre de la persona trabajadora:</strong> <span t-field="o.employee_id.name"/><br/>
+                            <strong>Puesto:</strong> <span t-field="o.scheme_id.job_title"/> |
+                            <strong>Área:</strong> <span t-field="o.scheme_id.area_name"/><br/>
+                            <strong>Responsable del área:</strong> <span t-field="o.manager_id.name"/><br/>
+                            <strong>Esquema Mensual de Referencia:</strong> <span t-field="o.scheme_id.name"/> (<span t-field="o.scheme_id.period_display"/>)<br/>
+                            <strong>Causa de documentación:</strong> <span t-field="o.incident_type"/>
+                        </p>
+
+                        <t t-if="o.breached_obligation_ids">
+                            <p><strong>Obligaciones comerciales relacionadas (Sección VII):</strong></p>
+                            <ul>
+                                <t t-foreach="o.breached_obligation_ids" t-as="ob">
+                                    <li><span t-field="ob.code"/>) <span t-field="ob.name"/></li>
+                                </t>
+                            </ul>
+                        </t>
+
+                        <h5 style="font-weight: bold; margin-top: 14px;">1. Resultados obtenidos y periodo evaluado</h5>
+                        <div style="border: 1px solid #000; padding: 8px; white-space: pre-line; margin-bottom: 12px;" t-field="o.results_and_period"/>
+
+                        <h5 style="font-weight: bold; margin-top: 14px;">2. Hechos y datos que sustentan la evaluación</h5>
+                        <div style="border: 1px solid #000; padding: 8px; white-space: pre-line; margin-bottom: 12px;" t-field="o.facts_and_data"/>
+
+                        <h5 style="font-weight: bold; margin-top: 14px;">3. Actividades que deberán corregirse o mejorarse</h5>
+                        <div style="border: 1px solid #000; padding: 8px; white-space: pre-line; margin-bottom: 12px;" t-field="o.activities_to_correct"/>
+
+                        <h5 style="font-weight: bold; margin-top: 14px;">4. Objetivos y plazos para verificar los avances</h5>
+                        <div style="border: 1px solid #000; padding: 8px; white-space: pre-line; margin-bottom: 12px;">
+                            <span t-field="o.goals_and_deadlines"/>
+                            <t t-if="o.verification_date">
+                                <br/><strong>Fecha programada para verificación de avances:</strong> <span t-field="o.verification_date"/>
+                            </t>
+                        </div>
+
+                        <h5 style="font-weight: bold; margin-top: 14px;">5. Observaciones de la persona trabajadora</h5>
+                        <p style="font-size: 11px; margin-bottom: 4px;">
+                            <em>La persona trabajadora podrá manifestar por escrito las circunstancias que expliquen sus resultados y aportar la información que considere pertinente:</em>
+                        </p>
+                        <t t-if="o.employee_statement">
+                            <div style="border: 1px solid #000; padding: 10px; min-height: 90px; white-space: pre-line;" t-field="o.employee_statement"/>
+                        </t>
+                        <t t-else="">
+                            <div style="border: 1px solid #000; padding: 14px; min-height: 110px;">
+                                <br/><hr style="border-top: 1px dotted #666;"/>
+                                <br/><hr style="border-top: 1px dotted #666;"/>
+                                <br/><hr style="border-top: 1px dotted #666;"/>
+                            </div>
+                        </t>
+
+                        <p style="text-align: justify; margin-top: 14px;">
+                            Con fundamento en la Sección VIII del Esquema Mensual de Metas Comerciales, Evaluación de Desempeño e Incentivos,
+                            se firma la presente constancia de seguimiento y medidas de mejora para los efectos legales conducentes.
+                            <strong t-esc="o._format_date_legal()"/>
+                        </p>
+
+                        <table style="width: 100%; margin-top: 40px; text-align: center; border: none;">
+                            <tr>
+                                <td style="width: 50%; padding: 18px;">
+                                    <strong>EL TRABAJADOR</strong><br/><br/><br/>
+                                    _____________________________________<br/>
+                                    <span t-field="o.employee_id.name"/>
+                                </td>
+                                <td style="width: 50%; padding: 18px;">
+                                    <strong>LA EMPRESA</strong><br/><br/><br/>
+                                    _____________________________________<br/>
+                                    <span t-field="o.manager_id.name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 50%; padding: 18px;">
+                                    <strong>TESTIGO</strong><br/><br/><br/>
+                                    _____________________________________<br/>
+                                    <span t-field="o.witness_1"/>
+                                </td>
+                                <td style="width: 50%; padding: 18px;">
+                                    <strong>TESTIGO</strong><br/><br/><br/>
+                                    _____________________________________<br/>
+                                    <span t-field="o.witness_2"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
+

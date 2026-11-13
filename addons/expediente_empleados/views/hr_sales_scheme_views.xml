@@ -1,0 +1,482 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         1. VISTAS DEL ESQUEMA MENSUAL DE METAS COMERCIALES (hr.sales.scheme)
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_hr_sales_scheme_form" model="ir.ui.view">
+        <field name="name">hr.sales.scheme.form</field>
+        <field name="model">hr.sales.scheme</field>
+        <field name="arch" type="xml">
+            <form string="Esquema Mensual de Metas Comerciales">
+                <header>
+                    <button name="action_print_scheme_pdf"
+                            string="Imprimir Esquema (PDF)"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-print"/>
+                    <button name="action_confirm_communicated"
+                            string="Confirmar Esquema Firmado"
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'borrador'"/>
+                    <button name="action_start_evaluation"
+                            string="Pasar a Evaluación"
+                            type="object"
+                            invisible="state != 'comunicado'"/>
+                    <button name="action_sync_ava_sales"
+                            string="Sincronizar Ventas AVA_API"
+                            type="object"
+                            class="btn-info"
+                            icon="fa-refresh"
+                            invisible="state == 'cancelado'"/>
+                    <button name="action_create_legal_observation"
+                            string="Documentar Observación / Medida de Mejora (Sección VIII)"
+                            type="object"
+                            class="btn-warning"
+                            icon="fa-gavel"
+                            invisible="state == 'cancelado'"/>
+                    <button name="action_close_scheme"
+                            string="Cerrar Periodo"
+                            type="object"
+                            invisible="state not in ['comunicado', 'en_evaluacion']"/>
+                    <button name="action_reset_draft"
+                            string="Volver a Borrador"
+                            type="object"
+                            groups="hr.group_hr_manager"
+                            invisible="state == 'borrador'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="borrador,comunicado,en_evaluacion,cerrado"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Esquema Mensual"/>
+                        <h1>
+                            <field name="name" placeholder="Ej. ESQ-2026-11 - Trabajadora"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="I. Datos Generales de la Trabajadora">
+                            <field name="employee_id" readonly="state != 'borrador'"/>
+                            <field name="nombre_alias" placeholder="Ej. ALMENDRA (nombreVendedor en /AVA/ventas)"/>
+                            <field name="job_title" readonly="state != 'borrador'"/>
+                            <field name="area_name" readonly="state != 'borrador'"/>
+                            <field name="manager_id" readonly="state != 'borrador'"/>
+                            <field name="communication_date" readonly="state != 'borrador'"/>
+                            <field name="period_start" readonly="state != 'borrador'"/>
+                            <field name="period_end" readonly="state != 'borrador'"/>
+                            <field name="period_display" readonly="1"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state != 'borrador'"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+
+                        <group string="III. Meta Comercial y Rendimiento Real (AVA_API)">
+                            <field name="target_amount" widget="monetary" readonly="state != 'borrador'"/>
+                            <field name="target_amount_text" readonly="state != 'borrador'"/>
+                            <field name="attribution_criteria" readonly="state != 'borrador'"/>
+                            <field name="attribution_criteria_other"
+                                   invisible="attribution_criteria != 'otro'"
+                                   readonly="state != 'borrador'"/>
+                            <separator string="Cálculo desde /AVA/ventas y /AVA/ventas/pagos"/>
+                            <field name="actual_sales" widget="monetary"/>
+                            <field name="excluded_returns_amount" widget="monetary"/>
+                            <field name="compliance_percentage" widget="percentage" options="{'factor': 1}"/>
+                            <field name="evaluation_level"
+                                   widget="badge"
+                                   decoration-danger="evaluation_level == 'criticamente_baja'"
+                                   decoration-warning="evaluation_level == 'inferior_meta'"
+                                   decoration-success="evaluation_level in ['meta_alcanzada', 'meta_superada']"/>
+                            <field name="matched_sales_count"/>
+                            <field name="valid_payments_count"/>
+                            <field name="excluded_payments_count"/>
+                            <field name="last_api_sync"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="VIII. Observaciones Legales y Medidas de Mejora" name="legal_observations">
+                            <field name="legal_observation_ids"
+                                   context="{'default_scheme_id': id, 'default_employee_id': employee_id, 'default_manager_id': manager_id}">
+                                <list decoration-danger="incident_type == 'produccion_critica'"
+                                      decoration-warning="state in ['borrador', 'en_seguimiento']"
+                                      decoration-success="state == 'cumplido'">
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="incident_type"/>
+                                    <field name="breached_obligation_ids" widget="many2many_tags" optional="show"/>
+                                    <field name="verification_date"/>
+                                    <field name="state" widget="badge"
+                                           decoration-info="state == 'borrador'"
+                                           decoration-primary="state == 'notificado'"
+                                           decoration-warning="state == 'en_seguimiento'"
+                                           decoration-success="state == 'cumplido'"
+                                           decoration-danger="state == 'incumplido'"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="VI. Seguimiento Semanal" name="weekly_reviews">
+                            <field name="weekly_review_ids" context="{'default_scheme_id': id}">
+                                <list>
+                                    <field name="week_number"/>
+                                    <field name="review_date"/>
+                                    <field name="reviewer_id"/>
+                                    <field name="target_amount" widget="monetary"/>
+                                    <field name="accumulated_sales" widget="monetary"/>
+                                    <field name="excluded_returns_amount" widget="monetary" optional="show"/>
+                                    <field name="compliance_pct"/>
+                                    <field name="documentation_medium"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="IV y V. Niveles de Producción e Incentivos" name="levels_and_incentives">
+                            <group string="IV. Niveles de Producción y Evaluación">
+                                <group>
+                                    <field name="threshold_critical" widget="monetary" readonly="state != 'borrador'"/>
+                                    <field name="threshold_below_min" widget="monetary" readonly="state != 'borrador'"/>
+                                    <field name="threshold_below_max" widget="monetary" readonly="state != 'borrador'"/>
+                                </group>
+                                <group>
+                                    <field name="threshold_reached" widget="monetary" readonly="state != 'borrador'"/>
+                                    <field name="threshold_exceeded" widget="monetary" readonly="state != 'borrador'"/>
+                                </group>
+                            </group>
+
+                            <separator string="V. Esquema de Incentivos Económicos"/>
+                            <field name="incentive_line_ids" readonly="state != 'borrador'">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="compliance_level"/>
+                                    <field name="period_sales_text"/>
+                                    <field name="commission_text"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="II. Objeto y X. Firma en PDF" name="object_and_signature">
+                            <group string="II. Objeto del Esquema">
+                                <field name="objective_text" nolabel="1" colspan="2" readonly="state != 'borrador'"/>
+                            </group>
+                            <group string="X. Alcance, Aceptación y Subida del Documento Firmado en PDF">
+                                <group>
+                                    <field name="signed_date"/>
+                                    <field name="witness_1" placeholder="Nombre completo del Testigo 1"/>
+                                    <field name="witness_2" placeholder="Nombre completo del Testigo 2"/>
+                                </group>
+                                <group>
+                                    <field name="signed_scheme_pdf_ids"
+                                           widget="many2many_binary"
+                                           string="Esquema Mensual Firmado (PDF)"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_hr_sales_scheme_list" model="ir.ui.view">
+        <field name="name">hr.sales.scheme.list</field>
+        <field name="model">hr.sales.scheme</field>
+        <field name="arch" type="xml">
+            <list string="Esquemas Mensuales de Metas Comerciales"
+                  decoration-danger="evaluation_level == 'criticamente_baja'"
+                  decoration-warning="evaluation_level == 'inferior_meta'"
+                  decoration-success="evaluation_level in ['meta_alcanzada', 'meta_superada']">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="nombre_alias" optional="show"/>
+                <field name="period_start"/>
+                <field name="period_end"/>
+                <field name="target_amount" widget="monetary"/>
+                <field name="actual_sales" widget="monetary"/>
+                <field name="excluded_returns_amount" widget="monetary" optional="show"/>
+                <field name="compliance_percentage"/>
+                <field name="evaluation_level" widget="badge"
+                       decoration-danger="evaluation_level == 'criticamente_baja'"
+                       decoration-warning="evaluation_level == 'inferior_meta'"
+                       decoration-success="evaluation_level in ['meta_alcanzada', 'meta_superada']"/>
+                <field name="observation_count" string="Observaciones"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'borrador'"
+                       decoration-primary="state == 'comunicado'"
+                       decoration-warning="state == 'en_evaluacion'"
+                       decoration-success="state == 'cerrado'"/>
+                <field name="currency_id" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_sales_scheme_search" model="ir.ui.view">
+        <field name="name">hr.sales.scheme.search</field>
+        <field name="model">hr.sales.scheme</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Esquemas Mensuales">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="nombre_alias"/>
+                <filter string="Producción Críticamente Baja" name="critica" domain="[('evaluation_level', '=', 'criticamente_baja')]"/>
+                <filter string="Inferior a la Meta" name="inferior" domain="[('evaluation_level', '=', 'inferior_meta')]"/>
+                <filter string="Meta Alcanzada o Superada" name="cumplida" domain="[('evaluation_level', 'in', ['meta_alcanzada', 'meta_superada'])]"/>
+                <separator/>
+                <filter string="Borrador" name="borrador" domain="[('state', '=', 'borrador')]"/>
+                <filter string="Comunicado y Firmado" name="comunicado" domain="[('state', '=', 'comunicado')]"/>
+                <group>
+                    <filter string="Trabajadora" name="group_employee" context="{'group_by': 'employee_id'}"/>
+                    <filter string="Mes de Evaluación" name="group_period" context="{'group_by': 'period_start:month'}"/>
+                    <filter string="Nivel de Evaluación" name="group_level" context="{'group_by': 'evaluation_level'}"/>
+                    <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_hr_sales_scheme" model="ir.actions.act_window">
+        <field name="name">Esquemas Mensuales de Metas</field>
+        <field name="res_model">hr.sales.scheme</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hr_sales_scheme_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Registra un nuevo Esquema Mensual de Metas Comerciales
+            </p>
+            <p>
+                Define la meta mensual de la agente de ventas, imprime el formato legal en PDF para firma, sube el documento firmado y sincroniza sus ventas desde AVA_API (/AVA/ventas y /AVA/ventas/pagos).
+            </p>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         2. VISTAS DE REVISIÓN SEMANAL (hr.sales.weekly.review - Sección VI)
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_hr_sales_weekly_review_form" model="ir.ui.view">
+        <field name="name">hr.sales.weekly.review.form</field>
+        <field name="model">hr.sales.weekly.review</field>
+        <field name="arch" type="xml">
+            <form string="Revisión Semanal del Desempeño (Sección VI)">
+                <header>
+                    <button name="action_sync_weekly_ava_sales"
+                            string="Obtener Ventas Acumuladas desde AVA_API"
+                            type="object"
+                            class="btn-info"
+                            icon="fa-refresh"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Datos de la Revisión Semanal">
+                            <field name="scheme_id"/>
+                            <field name="employee_id"/>
+                            <field name="week_number"/>
+                            <field name="review_date"/>
+                            <field name="reviewer_id"/>
+                            <field name="documentation_medium"/>
+                        </group>
+                        <group string="a) y b) Avance de Meta Comercial">
+                            <field name="target_amount" widget="monetary"/>
+                            <field name="accumulated_sales" widget="monetary"/>
+                            <field name="excluded_returns_amount" widget="monetary"/>
+                            <field name="compliance_pct"/>
+                            <field name="signed_review_pdf_ids" widget="many2many_binary"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Detalle del Seguimiento Semanal (Sección VI)">
+                        <field name="tracked_quotes_orders"
+                               placeholder="Detalla las cotizaciones, oportunidades comerciales y pedidos en seguimiento..."/>
+                        <field name="activities_and_obstacles"
+                               placeholder="Detalla las actividades realizadas y los obstáculos identificados..."/>
+                        <field name="agreed_actions_support"
+                               placeholder="Detalla las acciones de mejora acordadas y los apoyos que proporciona LA EMPRESA..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         3. VISTAS DE OBSERVACIONES LEGALES (hr.sales.legal.observation - VIII)
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_hr_sales_legal_observation_form" model="ir.ui.view">
+        <field name="name">hr.sales.legal.observation.form</field>
+        <field name="model">hr.sales.legal.observation</field>
+        <field name="arch" type="xml">
+            <form string="Observación Legal, Desviación y Medidas de Mejora (Sección VIII)">
+                <header>
+                    <button name="action_print_observation_pdf"
+                            string="Imprimir Acta de Observación (PDF)"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-print"/>
+                    <button name="action_mark_notified"
+                            string="Confirmar Acta Firmada (PDF Subido)"
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'borrador'"/>
+                    <button name="action_start_followup"
+                            string="Iniciar Seguimiento de Mejora"
+                            type="object"
+                            invisible="state != 'notificado'"/>
+                    <button name="action_mark_fulfilled"
+                            string="Marcar Medidas Cumplidas"
+                            type="object"
+                            class="btn-success"
+                            invisible="state not in ['notificado', 'en_seguimiento']"/>
+                    <button name="action_mark_unfulfilled"
+                            string="Marcar Incumplimiento"
+                            type="object"
+                            class="btn-danger"
+                            invisible="state not in ['notificado', 'en_seguimiento']"/>
+                    <button name="action_reset_draft"
+                            string="Volver a Borrador"
+                            type="object"
+                            groups="hr.group_hr_manager"
+                            invisible="state == 'borrador'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="borrador,notificado,en_seguimiento,cumplido"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Acta de Observación y Medidas de Mejora (Sección VIII)"/>
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Datos Generales y Vínculo con Meta Mensual">
+                            <field name="employee_id" readonly="state != 'borrador'"/>
+                            <field name="nombre_alias"/>
+                            <field name="scheme_id" domain="[('employee_id', '=', employee_id)]" readonly="state != 'borrador'"/>
+                            <field name="manager_id" readonly="state != 'borrador'"/>
+                            <field name="date" readonly="state != 'borrador'"/>
+                        </group>
+                        <group string="Causa Legal y Obligaciones Comerciales (Sección VII y VIII)">
+                            <field name="incident_type" readonly="state != 'borrador'"/>
+                            <field name="breached_obligation_ids"
+                                   widget="many2many_tags"
+                                   readonly="state != 'borrador'"
+                                   placeholder="Selecciona los incisos de la Sección VII aplicables..."/>
+                            <field name="verification_date"/>
+                        </group>
+                    </group>
+
+                    <separator string="Lineamientos Legales de la Sección VIII (Resultados, Desviaciones y Medidas de Mejora)"/>
+                    <group>
+                        <field name="results_and_period"
+                               placeholder="Precisar los resultados obtenidos (ventas en AVA_API vs. meta) y el periodo evaluado..."
+                               readonly="state != 'borrador'"/>
+                        <field name="facts_and_data"
+                               placeholder="Precisar de forma objetiva los hechos y datos comprobables que sustentan la evaluación..."
+                               readonly="state != 'borrador'"/>
+                        <field name="activities_to_correct"
+                               placeholder="Precisar las actividades comerciales específicas que deberán corregirse o mejorarse..."
+                               readonly="state != 'borrador'"/>
+                        <field name="goals_and_deadlines"
+                               placeholder="Precisar los objetivos concretos y los plazos otorgados para verificar los avances..."
+                               readonly="state != 'borrador'"/>
+                        <field name="employee_statement"
+                               placeholder="Espacio para transcribir las observaciones de la persona trabajadora (o dejar en blanco para que las manifieste por escrito en el PDF impreso antes de firmar)..."/>
+                    </group>
+
+                    <separator string="Firmas y Subida del Documento en PDF Ya Firmado"/>
+                    <group>
+                        <group>
+                            <field name="witness_1" placeholder="Nombre completo del Testigo 1"/>
+                            <field name="witness_2" placeholder="Nombre completo del Testigo 2"/>
+                        </group>
+                        <group>
+                            <field name="signed_observation_pdf_ids"
+                                   widget="many2many_binary"
+                                   string="Acta de Observación Firmada (PDF)"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_hr_sales_legal_observation_list" model="ir.ui.view">
+        <field name="name">hr.sales.legal.observation.list</field>
+        <field name="model">hr.sales.legal.observation</field>
+        <field name="arch" type="xml">
+            <list string="Historial de Observaciones Legales (Sección VIII)"
+                  decoration-danger="state == 'incumplido' or incident_type == 'produccion_critica'"
+                  decoration-warning="state == 'en_seguimiento'"
+                  decoration-success="state == 'cumplido'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="employee_id"/>
+                <field name="scheme_id"/>
+                <field name="incident_type"/>
+                <field name="breached_obligation_ids" widget="many2many_tags" optional="show"/>
+                <field name="verification_date"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'borrador'"
+                       decoration-primary="state == 'notificado'"
+                       decoration-warning="state == 'en_seguimiento'"
+                       decoration-success="state == 'cumplido'"
+                       decoration-danger="state == 'incumplido'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_sales_legal_observation_search" model="ir.ui.view">
+        <field name="name">hr.sales.legal.observation.search</field>
+        <field name="model">hr.sales.legal.observation</field>
+        <field name="arch" type="xml">
+            <search string="Historial de Observaciones Legales">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="scheme_id"/>
+                <filter string="Producción Críticamente Baja" name="critica" domain="[('incident_type', '=', 'produccion_critica')]"/>
+                <filter string="Incumplimiento de Actividades" name="incumplimiento" domain="[('incident_type', '=', 'incumplimiento_actividades')]"/>
+                <filter string="En Seguimiento" name="seguimiento" domain="[('state', '=', 'en_seguimiento')]"/>
+                <group>
+                    <filter string="Trabajadora" name="group_employee" context="{'group_by': 'employee_id'}"/>
+                    <filter string="Mes (Fecha)" name="group_date" context="{'group_by': 'date:month'}"/>
+                    <filter string="Esquema Mensual" name="group_scheme" context="{'group_by': 'scheme_id'}"/>
+                    <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_hr_sales_legal_observation" model="ir.actions.act_window">
+        <field name="name">Historial de Observaciones Legales</field>
+        <field name="res_model">hr.sales.legal.observation</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hr_sales_legal_observation_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Registra una nueva Observación Legal / Medida de Mejora (Sección VIII)
+            </p>
+            <p>
+                Documenta las desviaciones de desempeño, los hechos objetivos, las actividades por corregir, los plazos y las manifestaciones de la persona trabajadora conforme a los lineamientos legales, e imprime el PDF para firma.
+            </p>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         4. MENÚS EN RECURSOS HUMANOS (EMPLEADOS)
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <menuitem id="menu_hr_sales_performance_root"
+              name="Metas y Observaciones Legales"
+              parent="hr.menu_hr_root"
+              sequence="25"
+              groups="hr.group_hr_user"/>
+
+    <menuitem id="menu_hr_sales_scheme"
+              name="Esquemas Mensuales de Metas"
+              parent="menu_hr_sales_performance_root"
+              action="action_hr_sales_scheme"
+              sequence="10"/>
+
+    <menuitem id="menu_hr_sales_legal_observation"
+              name="Historial de Observaciones (Sección VIII)"
+              parent="menu_hr_sales_performance_root"
+              action="action_hr_sales_legal_observation"
+              sequence="20"/>
+</odoo>
+

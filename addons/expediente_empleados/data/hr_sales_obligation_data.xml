@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="obligation_a" model="hr.sales.obligation">
+            <field name="code">a</field>
+            <field name="name">Realizar diligentemente las actividades de promoción y venta correspondientes a su puesto.</field>
+        </record>
+        <record id="obligation_b" model="hr.sales.obligation">
+            <field name="code">b</field>
+            <field name="name">Atender y dar seguimiento oportuno a los clientes asignados.</field>
+        </record>
+        <record id="obligation_c" model="hr.sales.obligation">
+            <field name="code">c</field>
+            <field name="name">Dar seguimiento a cotizaciones, pedidos y oportunidades comerciales bajo su responsabilidad.</field>
+        </record>
+        <record id="obligation_d" model="hr.sales.obligation">
+            <field name="code">d</field>
+            <field name="name">Registrar de manera veraz las gestiones realizadas y los resultados obtenidos.</field>
+        </record>
+        <record id="obligation_e" model="hr.sales.obligation">
+            <field name="code">e</field>
+            <field name="name">Informar oportunamente sobre obstáculos que puedan afectar el desarrollo de sus actividades comerciales.</field>
+        </record>
+        <record id="obligation_f" model="hr.sales.obligation">
+            <field name="code">f</field>
+            <field name="name">Atender las instrucciones de trabajo lícitas y participar en las reuniones de seguimiento que correspondan.</field>
+        </record>
+        <record id="obligation_g" model="hr.sales.obligation">
+            <field name="code">g</field>
+            <field name="name">Colaborar en las acciones de mejora acordadas dentro del ámbito de sus responsabilidades.</field>
+        </record>
+    </data>
+</odoo>
+

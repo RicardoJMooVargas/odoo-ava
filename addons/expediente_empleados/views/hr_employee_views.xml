@@ -1,9 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="view_employee_form_expediente" model="ir.ui.view">
         <field name="name">hr.employee.form.expediente</field>
         <field name="model">hr.employee</field>
         <field name="inherit_id" ref="hr.view_employee_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_sales_schemes"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-bullseye"
+                        invisible="not es_agente_ventas and sales_scheme_count == 0">
+                    <field name="sales_scheme_count" widget="statinfo" string="Metas Mensuales"/>
+                </button>
+                <button name="action_view_legal_observations"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-gavel"
+                        invisible="not es_agente_ventas and legal_observation_count == 0">
+                    <field name="legal_observation_count" widget="statinfo" string="Observaciones"/>
+                </button>
+            </xpath>
+
             <xpath expr="//notebook" position="inside">
                 <page string="Expediente laboral" name="expediente_laboral">
                     <group>
@@ -13,6 +31,8 @@
                             <field name="division"/>
                             <field name="estatus_expediente"/>
                             <field name="es_chofer"/>
+                            <field name="es_agente_ventas"/>
+                            <field name="nombre_alias" placeholder="Ej. ALMENDRA (nombreVendedor en /AVA/ventas)"/>
                             <field name="no_seguro_social"/>
                             <field name="rfc"/>
                         </group>
@@ -47,6 +67,51 @@
                         </page>
                     </notebook>
                     <field name="observaciones_expediente" placeholder="Notas del expediente..."/>
+                </page>
+
+                <page string="Metas y Observaciones Legales"
+                      name="metas_observaciones_legales"
+                      invisible="not es_agente_ventas and sales_scheme_count == 0 and legal_observation_count == 0">
+                    <group>
+                        <group string="Configuración de Agente para AVA_API">
+                            <field name="es_agente_ventas"/>
+                            <field name="nombre_alias" placeholder="Ej. ALMENDRA (nombreVendedor en /AVA/ventas)"/>
+                        </group>
+                    </group>
+
+                    <separator string="Historial Mensual de Metas Comerciales"/>
+                    <field name="sales_scheme_ids" context="{'default_employee_id': id}">
+                        <list decoration-danger="evaluation_level == 'criticamente_baja'"
+                              decoration-warning="evaluation_level == 'inferior_meta'"
+                              decoration-success="evaluation_level in ['meta_alcanzada', 'meta_superada']">
+                            <field name="name"/>
+                            <field name="period_start"/>
+                            <field name="period_end"/>
+                            <field name="target_amount" widget="monetary"/>
+                            <field name="actual_sales" widget="monetary"/>
+                            <field name="excluded_returns_amount" widget="monetary" optional="show"/>
+                            <field name="compliance_percentage"/>
+                            <field name="evaluation_level" widget="badge"/>
+                            <field name="observation_count" string="Observaciones"/>
+                            <field name="state" widget="badge"/>
+                            <field name="currency_id" column_invisible="True"/>
+                        </list>
+                    </field>
+
+                    <separator string="Historial de Observaciones Legales y Medidas de Mejora (Sección VIII)"/>
+                    <field name="legal_observation_ids" context="{'default_employee_id': id}">
+                        <list decoration-danger="state == 'incumplido' or incident_type == 'produccion_critica'"
+                              decoration-warning="state == 'en_seguimiento'"
+                              decoration-success="state == 'cumplido'">
+                            <field name="name"/>
+                            <field name="date"/>
+                            <field name="scheme_id"/>
+                            <field name="incident_type"/>
+                            <field name="breached_obligation_ids" widget="many2many_tags"/>
+                            <field name="verification_date"/>
+                            <field name="state" widget="badge"/>
+                        </list>
+                    </field>
                 </page>
             </xpath>
         </field>

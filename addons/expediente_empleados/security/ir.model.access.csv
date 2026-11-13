@@ -1,2 +1,10 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_expediente_empleados_user,expediente empleados user,hr.model_hr_employee,hr.group_hr_user,1,1,1,0
+access_hr_sales_obligation_user,hr.sales.obligation.user,model_hr_sales_obligation,hr.group_hr_user,1,1,1,0
+access_hr_sales_obligation_manager,hr.sales.obligation.manager,model_hr_sales_obligation,hr.group_hr_manager,1,1,1,1
+access_hr_sales_scheme_user,hr.sales.scheme.user,model_hr_sales_scheme,hr.group_hr_user,1,1,1,0
+access_hr_sales_scheme_manager,hr.sales.scheme.manager,model_hr_sales_scheme,hr.group_hr_manager,1,1,1,1
+access_hr_sales_incentive_line_user,hr.sales.incentive.line.user,model_hr_sales_incentive_line,hr.group_hr_user,1,1,1,1
+access_hr_sales_weekly_review_user,hr.sales.weekly.review.user,model_hr_sales_weekly_review,hr.group_hr_user,1,1,1,1
+access_hr_sales_legal_observation_user,hr.sales.legal.observation.user,model_hr_sales_legal_observation,hr.group_hr_user,1,1,1,0
+access_hr_sales_legal_observation_manager,hr.sales.legal.observation.manager,model_hr_sales_legal_observation,hr.group_hr_manager,1,1,1,1
