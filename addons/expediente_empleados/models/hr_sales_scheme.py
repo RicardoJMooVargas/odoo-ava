@@ -575,9 +575,13 @@ class HrSalesScheme(models.Model):
             "last_api_sync": fields.Datetime.now(),
         })
 
+        pending = result.get("pending_sales_count", 0)
+        processed = result.get("processed_sales_count", result["matched_sales_count"])
+
         self.message_post(
             body=_(
-                "Sincronización con AVA_API completada para el alias '%s' (%s a %s): "
+                "Sincronización con AVA_API para el alias '%s' (%s a %s): "
+                "Ventas procesadas: %s de %s. "
                 "Ventas computables = $%s (%s pagos válidos). "
                 "Devoluciones excluidas = $%s (%s pagos con '99 NOTA DE DEVOLUCI' / 'DEVOLUCION DE PRODUCTO')."
             )
@@ -585,6 +589,8 @@ class HrSalesScheme(models.Model):
                 alias,
                 self.period_start,
                 self.period_end,
+                processed,
+                result["matched_sales_count"],
                 f"{result['valid_sales_amount']:,.2f}",
                 result["valid_payments_count"],
                 f"{result['excluded_returns_amount']:,.2f}",
@@ -592,11 +598,27 @@ class HrSalesScheme(models.Model):
             )
         )
 
+        if pending > 0:
+            return {
+                "type": "ir.actions.client",
+                "tag": "display_notification",
+                "params": {
+                    "title": _("Avance guardado (%s/%s ventas)") % (processed, result["matched_sales_count"]),
+                    "message": _(
+                        "Llevas $%s computables. Quedan %s ventas por consultar (pausado preventivamente por el límite de 60 peticiones/minuto de AVA_API). "
+                        "Espera ~30 segundos y vuelve a pulsar 'Sincronizar Ventas AVA_API' para continuar donde se quedó."
+                    )
+                    % (f"{result['valid_sales_amount']:,.2f}", pending),
+                    "type": "warning",
+                    "sticky": True,
+                },
+            }
+
         return {
             "type": "ir.actions.client",
             "tag": "display_notification",
             "params": {
-                "title": _("Ventas actualizadas desde AVA_API"),
+                "title": _("Ventas actualizadas al 100%% (%s ventas)") % result["matched_sales_count"],
                 "message": _(
                     "Ventas computables: $%s | Devoluciones excluidas: $%s"
                 )
