@@ -55,7 +55,7 @@
                     <setting string="Texto por Defecto del Objeto (Sección II)"
                              help="Texto legal preconfigurado que se cargará por defecto en la Sección II de cada nuevo Esquema Mensual de Metas Comerciales.">
                         <div class="content-group mt16">
-                            <field name="ava_default_scheme_objective" placeholder="Texto legal de la Sección II. OBJETO..."/>
+                            <field name="ava_default_scheme_objective" widget="text" placeholder="Texto legal de la Sección II. OBJETO..."/>
                         </div>
                     </setting>
                 </block>

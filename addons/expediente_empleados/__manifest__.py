@@ -1,6 +1,6 @@
 {
-    "name": "Expediente de Empleados y Metas Comerciales",
-    "version": "19.0.2.0.0",
+    "name": "AVA - Expediente de Empleados y Metas Comerciales",
+    "version": "19.0.2.0.1",
     "category": "Human Resources",
     "summary": "Expediente laboral, Esquema Mensual de Metas Comerciales (AVA_API) e Historial de Observaciones Legales",
     "description": (
@@ -18,6 +18,6 @@
         "report/hr_sales_scheme_reports.xml",
     ],
     "installable": True,
-    "application": False,
+    "application": True,
     "license": "LGPL-3",
 }

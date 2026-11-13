@@ -459,8 +459,43 @@
     </record>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
-         4. MENÚS EN RECURSOS HUMANOS (EMPLEADOS)
+         4. MENÚS (APP PRINCIPAL Y SUBMENÚ EN EMPLEADOS)
          ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="action_ava_metas_config_settings" model="ir.actions.act_window">
+        <field name="name">Configuración AVA_API y Metas Comerciales</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'hr', 'bin_size': False}</field>
+    </record>
+
+    <!-- Aplicación independiente en el menú principal de Odoo -->
+    <menuitem id="menu_ava_metas_app_root"
+              name="Metas y Observaciones"
+              web_icon="hr,static/description/icon.png"
+              sequence="35"
+              groups="hr.group_hr_user"/>
+
+    <menuitem id="menu_ava_metas_app_schemes"
+              name="Esquemas Mensuales de Metas"
+              parent="menu_ava_metas_app_root"
+              action="action_hr_sales_scheme"
+              sequence="10"/>
+
+    <menuitem id="menu_ava_metas_app_observations"
+              name="Historial de Observaciones (Sección VIII)"
+              parent="menu_ava_metas_app_root"
+              action="action_hr_sales_legal_observation"
+              sequence="20"/>
+
+    <menuitem id="menu_ava_metas_app_config"
+              name="Configuración AVA_API"
+              parent="menu_ava_metas_app_root"
+              action="action_ava_metas_config_settings"
+              groups="base.group_system"
+              sequence="90"/>
+
+    <!-- Submenú también accesible dentro de Empleados (hr) -->
     <menuitem id="menu_hr_sales_performance_root"
               name="Metas y Observaciones Legales"
               parent="hr.menu_hr_root"

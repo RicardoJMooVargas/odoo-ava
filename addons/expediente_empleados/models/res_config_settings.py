@@ -67,7 +67,7 @@ class ResConfigSettings(models.TransientModel):
         config_parameter="ava_api.timeout",
         default=30,
     )
-    ava_default_scheme_objective = fields.Text(
+    ava_default_scheme_objective = fields.Char(
         string="Texto por defecto del Objeto (Sección II)",
         config_parameter="ava_metas.default_objective",
         default=DEFAULT_SCHEME_OBJECTIVE,
@@ -77,4 +77,3 @@ class ResConfigSettings(models.TransientModel):
         self.ensure_one()
         self.set_values()
         return self.env["ava.api.service"].test_connection()
-
