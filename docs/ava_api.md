@@ -10,7 +10,7 @@ Las credenciales de conexión se configuran dentro de Odoo en **Empleados -> Con
 
 | Parámetro del Sistema (`ir.config_parameter`) | Descripción | Valor por defecto |
 | :--- | :--- | :--- |
-| `ava_api.base_url` | URL base del servidor de `AVA_API` (sin barra final) | `https://logichounds.com` |
+| `ava_api.base_url` | URL base del servidor de `AVA_API` (sin barra final) | `https://sistemainforweb.com` |
 | `ava_api.auth_type` | Método de autenticación (`none`, `bearer`, `basic`, `api_key_header`, `api_key_query`) | `bearer` |
 | `ava_api.username` | Usuario para Basic Auth o parámetro de usuario | `ADMIN` |
 | `ava_api.password` | Contraseña o secreto para Basic Auth | *(vacío)* |

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import fields, models, _
+from odoo import api, fields, models, _
 
 
 DEFAULT_SCHEME_OBJECTIVE = (
@@ -24,7 +24,7 @@ class ResConfigSettings(models.TransientModel):
     ava_api_base_url = fields.Char(
         string="URL Base de AVA_API",
         config_parameter="ava_api.base_url",
-        default="https://logichounds.com",
+        default="https://sistemainforweb.com",
         help="URL base donde se encuentran los endpoints /AVA/ventas y /AVA/ventas/pagos.",
     )
     ava_api_auth_type = fields.Selection(
@@ -45,7 +45,7 @@ class ResConfigSettings(models.TransientModel):
         default="ADMIN",
     )
     ava_api_password = fields.Char(
-        string="Contraseña AVA_API",
+        string="Contraseña / Clave Secreta AVA_API",
         config_parameter="ava_api.password",
     )
     ava_api_key = fields.Char(
@@ -53,7 +53,7 @@ class ResConfigSettings(models.TransientModel):
         config_parameter="ava_api.api_key",
     )
     ava_api_key_name = fields.Char(
-        string="Nombre del Header / Parámetro API Key",
+        string="Nombre del Header / Parámetro de Clave",
         config_parameter="ava_api.api_key_name",
         default="X-API-Key",
     )
@@ -73,7 +73,41 @@ class ResConfigSettings(models.TransientModel):
         default=DEFAULT_SCHEME_OBJECTIVE,
     )
 
+    @api.model
+    def default_get(self, fields_list):
+        res = super().default_get(fields_list)
+        if res.get("ava_api_base_url") in (False, "", "https://logichounds.com"):
+            res["ava_api_base_url"] = "https://sistemainforweb.com"
+        return res
+
+    def _save_ava_params_sudo(self):
+        self.ensure_one()
+        params = self.env["ir.config_parameter"].sudo()
+        params.set_param("ava_api.base_url", (self.ava_api_base_url or "https://sistemainforweb.com").strip())
+        params.set_param("ava_api.auth_type", self.ava_api_auth_type or "bearer")
+        params.set_param("ava_api.username", self.ava_api_username or "")
+        params.set_param("ava_api.password", self.ava_api_password or "")
+        params.set_param("ava_api.api_key", self.ava_api_key or "")
+        params.set_param("ava_api.api_key_name", self.ava_api_key_name or "X-API-Key")
+        params.set_param("ava_api.catalogo", self.ava_api_catalogo or "AVA01")
+        params.set_param("ava_api.timeout", str(self.ava_api_timeout or 30))
+        params.set_param("ava_metas.default_objective", self.ava_default_scheme_objective or DEFAULT_SCHEME_OBJECTIVE)
+
+    def action_save_ava_config(self):
+        self.ensure_one()
+        self._save_ava_params_sudo()
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": _("Configuración Guardada"),
+                "message": _("Las credenciales y parámetros de AVA_API se han guardado correctamente."),
+                "type": "success",
+                "sticky": False,
+            },
+        }
+
     def action_test_ava_api_connection(self):
         self.ensure_one()
-        self.set_values()
+        self._save_ava_params_sudo()
         return self.env["ava.api.service"].test_connection()

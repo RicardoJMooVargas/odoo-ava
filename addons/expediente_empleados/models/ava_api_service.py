@@ -32,7 +32,11 @@ class AvaApiService(models.AbstractModel):
     @api.model
     def _get_api_config(self):
         params = self.env["ir.config_parameter"].sudo()
-        base_url = (params.get_param("ava_api.base_url") or "https://logichounds.com").rstrip("/")
+        raw_url = (params.get_param("ava_api.base_url") or "").strip().rstrip("/")
+        if not raw_url or raw_url == "https://logichounds.com":
+            base_url = "https://sistemainforweb.com"
+        else:
+            base_url = raw_url
         auth_type = params.get_param("ava_api.auth_type") or "bearer"
         username = params.get_param("ava_api.username") or "ADMIN"
         password = params.get_param("ava_api.password") or ""

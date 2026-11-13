@@ -1,5 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- 1. Vista dedicada directa para el menú "Configuración AVA_API" -->
+    <record id="view_ava_api_config_settings_standalone_form" model="ir.ui.view">
+        <field name="name">res.config.settings.ava.api.standalone.form</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="999"/>
+        <field name="arch" type="xml">
+            <form string="Configuración de Claves y Acceso a AVA_API">
+                <header>
+                    <button name="action_save_ava_config"
+                            type="object"
+                            string="Guardar Configuración"
+                            class="btn-primary"
+                            icon="fa-save"/>
+                    <button name="action_test_ava_api_connection"
+                            type="object"
+                            string="Probar Conexión con AVA_API"
+                            class="btn-secondary"
+                            icon="fa-plug"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Configuración de Acceso a AVA_API</h1>
+                        <p class="text-muted">
+                            Configura aquí el servidor (<code>https://sistemainforweb.com</code>) y las claves/credenciales para consultar
+                            <code>/AVA/ventas</code> y <code>/AVA/ventas/pagos</code>.
+                        </p>
+                    </div>
+                    <group>
+                        <group string="Servidor y Catálogo">
+                            <field name="ava_api_base_url" placeholder="https://sistemainforweb.com"/>
+                            <field name="ava_api_catalogo" placeholder="AVA01"/>
+                            <field name="ava_api_timeout"/>
+                        </group>
+                        <group string="Claves y Credenciales de Acceso">
+                            <field name="ava_api_auth_type"/>
+                            <field name="ava_api_username" placeholder="Ej. ADMIN"/>
+                            <field name="ava_api_password" password="True" placeholder="Contraseña o Clave Secreta"/>
+                            <field name="ava_api_key" password="True" placeholder="Bearer Token o API Key"/>
+                            <field name="ava_api_key_name" placeholder="Ej. X-API-Key o Authorization"/>
+                        </group>
+                    </group>
+                    <separator string="Texto Legal por Defecto: Sección II (Objeto del Esquema Mensual)"/>
+                    <group>
+                        <field name="ava_default_scheme_objective"
+                               widget="text"
+                               nolabel="1"
+                               colspan="2"
+                               placeholder="Texto legal de la Sección II. OBJETO..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- 2. Bloque integrado también dentro de Ajustes Generales -> Empleados -->
     <record id="res_config_settings_view_form_ava_metas" model="ir.ui.view">
         <field name="name">res.config.settings.view.form.ava.metas</field>
         <field name="model">res.config.settings</field>
@@ -7,12 +62,12 @@
         <field name="arch" type="xml">
             <xpath expr="//block[@name='employees_setting_container']" position="after">
                 <block title="AVA_API y Esquema Mensual de Metas Comerciales" name="ava_api_sales_scheme_settings">
-                    <setting string="Conexión a AVA_API (/AVA/ventas y /AVA/ventas/pagos)"
-                             help="Configura la URL y credenciales para consultar las ventas y pagos de las agentes de ventas usando su 'Nombre Alias' (nombreVendedor).">
+                    <setting string="Conexión y Claves de AVA_API (/AVA/ventas y /AVA/ventas/pagos)"
+                             help="Configura la URL (https://sistemainforweb.com) y las claves de acceso para consultar las ventas y pagos de cada agente.">
                         <div class="content-group mt16">
                             <div class="row mt8">
                                 <label for="ava_api_base_url" class="col-lg-4 o_light_label"/>
-                                <field name="ava_api_base_url" placeholder="https://logichounds.com"/>
+                                <field name="ava_api_base_url" placeholder="https://sistemainforweb.com"/>
                             </div>
                             <div class="row mt8">
                                 <label for="ava_api_catalogo" class="col-lg-4 o_light_label"/>
@@ -22,19 +77,19 @@
                                 <label for="ava_api_auth_type" class="col-lg-4 o_light_label"/>
                                 <field name="ava_api_auth_type"/>
                             </div>
-                            <div class="row mt8" invisible="ava_api_auth_type not in ['basic', 'none', 'bearer', 'api_key_header', 'api_key_query']">
+                            <div class="row mt8">
                                 <label for="ava_api_username" class="col-lg-4 o_light_label"/>
                                 <field name="ava_api_username"/>
                             </div>
-                            <div class="row mt8" invisible="ava_api_auth_type != 'basic'">
+                            <div class="row mt8">
                                 <label for="ava_api_password" class="col-lg-4 o_light_label"/>
                                 <field name="ava_api_password" password="True"/>
                             </div>
-                            <div class="row mt8" invisible="ava_api_auth_type not in ['bearer', 'api_key_header', 'api_key_query']">
+                            <div class="row mt8">
                                 <label for="ava_api_key" class="col-lg-4 o_light_label"/>
                                 <field name="ava_api_key" password="True"/>
                             </div>
-                            <div class="row mt8" invisible="ava_api_auth_type not in ['api_key_header', 'api_key_query']">
+                            <div class="row mt8">
                                 <label for="ava_api_key_name" class="col-lg-4 o_light_label"/>
                                 <field name="ava_api_key_name"/>
                             </div>
@@ -63,4 +118,3 @@
         </field>
     </record>
 </odoo>
-
