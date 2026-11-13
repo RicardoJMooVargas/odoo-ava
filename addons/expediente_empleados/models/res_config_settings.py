@@ -25,42 +25,22 @@ class ResConfigSettings(models.TransientModel):
         string="URL Base de AVA_API",
         config_parameter="ava_api.base_url",
         default="https://sistemainforweb.com",
-        help="URL base donde se encuentran los endpoints /AVA/ventas y /AVA/ventas/pagos.",
-    )
-    ava_api_auth_type = fields.Selection(
-        [
-            ("none", "Sin autenticación adicional"),
-            ("bearer", "Bearer Token (Header Authorization)"),
-            ("basic", "HTTP Basic Auth (Usuario y Contraseña)"),
-            ("api_key_header", "API Key en Header"),
-            ("api_key_query", "API Key en Query Param"),
-        ],
-        string="Tipo de Autenticación AVA_API",
-        config_parameter="ava_api.auth_type",
-        default="bearer",
-    )
-    ava_api_username = fields.Char(
-        string="Usuario AVA_API",
-        config_parameter="ava_api.username",
-        default="ADMIN",
-    )
-    ava_api_password = fields.Char(
-        string="Contraseña / Clave Secreta AVA_API",
-        config_parameter="ava_api.password",
+        help="URL base del servidor de la API (ej. https://sistemainforweb.com o https://logichounds.com).",
     )
     ava_api_key = fields.Char(
-        string="Token / API Key AVA_API",
+        string="1. API Key (Cabecera X-Api-Key)",
         config_parameter="ava_api.api_key",
+        help="Se envía en la cabecera X-Api-Key en todas las peticiones (/AVA/Token y consultas GET).",
     )
-    ava_api_key_name = fields.Char(
-        string="Nombre del Header / Parámetro de Clave",
-        config_parameter="ava_api.api_key_name",
-        default="X-API-Key",
+    ava_api_client_id = fields.Char(
+        string="2. ClientId",
+        config_parameter="ava_api.client_id",
+        help="Identificador de cliente entregado a AVA. Se envía en el cuerpo JSON de POST /AVA/Token.",
     )
-    ava_api_catalogo = fields.Char(
-        string="Catálogo AVA_API",
-        config_parameter="ava_api.catalogo",
-        default="AVA01",
+    ava_api_client_secret = fields.Char(
+        string="3. ClientSecret",
+        config_parameter="ava_api.client_secret",
+        help="Secreto de cliente entregado a AVA. Se envía en el cuerpo JSON de POST /AVA/Token.",
     )
     ava_api_timeout = fields.Integer(
         string="Timeout (segundos)",
@@ -76,22 +56,22 @@ class ResConfigSettings(models.TransientModel):
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
-        if res.get("ava_api_base_url") in (False, "", "https://logichounds.com"):
+        if not res.get("ava_api_base_url"):
             res["ava_api_base_url"] = "https://sistemainforweb.com"
         return res
 
     def _save_ava_params_sudo(self):
         self.ensure_one()
         params = self.env["ir.config_parameter"].sudo()
-        params.set_param("ava_api.base_url", (self.ava_api_base_url or "https://sistemainforweb.com").strip())
-        params.set_param("ava_api.auth_type", self.ava_api_auth_type or "bearer")
-        params.set_param("ava_api.username", self.ava_api_username or "")
-        params.set_param("ava_api.password", self.ava_api_password or "")
-        params.set_param("ava_api.api_key", self.ava_api_key or "")
-        params.set_param("ava_api.api_key_name", self.ava_api_key_name or "X-API-Key")
-        params.set_param("ava_api.catalogo", self.ava_api_catalogo or "AVA01")
+        params.set_param("ava_api.base_url", (self.ava_api_base_url or "https://sistemainforweb.com").strip().rstrip("/"))
+        params.set_param("ava_api.api_key", (self.ava_api_key or "").strip())
+        params.set_param("ava_api.client_id", (self.ava_api_client_id or "").strip())
+        params.set_param("ava_api.client_secret", (self.ava_api_client_secret or "").strip())
         params.set_param("ava_api.timeout", str(self.ava_api_timeout or 30))
         params.set_param("ava_metas.default_objective", self.ava_default_scheme_objective or DEFAULT_SCHEME_OBJECTIVE)
+        # Limpiar token en caché cuando se actualizan las credenciales
+        params.set_param("ava_api.cached_token", "")
+        params.set_param("ava_api.token_expires_at", "0")
 
     def action_save_ava_config(self):
         self.ensure_one()
@@ -101,7 +81,7 @@ class ResConfigSettings(models.TransientModel):
             "tag": "display_notification",
             "params": {
                 "title": _("Configuración Guardada"),
-                "message": _("Las credenciales y parámetros de AVA_API se han guardado correctamente."),
+                "message": _("Los 3 parámetros de acceso (API Key, ClientId y ClientSecret) se han guardado correctamente."),
                 "type": "success",
                 "sticky": False,
             },

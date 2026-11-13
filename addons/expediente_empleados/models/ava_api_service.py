@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
+import time
 import unicodedata
+from datetime import datetime, timedelta
 import requests
 
 from odoo import api, models, _
@@ -27,77 +29,210 @@ def _normalize_text(value):
 
 class AvaApiService(models.AbstractModel):
     _name = "ava.api.service"
-    _description = "Cliente de Integración con AVA_API (/AVA/ventas y /AVA/ventas/pagos)"
+    _description = "Cliente de Integración con AVA_API (/AVA/Token, /AVA/ventas y /AVA/ventas/pagos)"
 
     @api.model
     def _get_api_config(self):
         params = self.env["ir.config_parameter"].sudo()
-        raw_url = (params.get_param("ava_api.base_url") or "").strip().rstrip("/")
-        if not raw_url or raw_url == "https://logichounds.com":
-            base_url = "https://sistemainforweb.com"
-        else:
-            base_url = raw_url
-        auth_type = params.get_param("ava_api.auth_type") or "bearer"
-        username = params.get_param("ava_api.username") or "ADMIN"
-        password = params.get_param("ava_api.password") or ""
-        api_key = params.get_param("ava_api.api_key") or ""
-        api_key_name = params.get_param("ava_api.api_key_name") or "X-API-Key"
-        catalogo = params.get_param("ava_api.catalogo") or "AVA01"
+        base_url = (params.get_param("ava_api.base_url") or "https://sistemainforweb.com").strip().rstrip("/")
+        api_key = (params.get_param("ava_api.api_key") or "").strip()
+        client_id = (params.get_param("ava_api.client_id") or "").strip()
+        client_secret = (params.get_param("ava_api.client_secret") or "").strip()
         try:
             timeout = int(params.get_param("ava_api.timeout") or 30)
         except ValueError:
             timeout = 30
         return {
             "base_url": base_url,
-            "auth_type": auth_type,
-            "username": username,
-            "password": password,
             "api_key": api_key,
-            "api_key_name": api_key_name,
-            "catalogo": catalogo,
+            "client_id": client_id,
+            "client_secret": client_secret,
             "timeout": max(timeout, 5),
         }
 
     @api.model
-    def _build_request_kwargs(self, config, extra_params=None):
-        headers = {"Accept": "application/json"}
-        params = {"catalogo": config["catalogo"]}
-        if config["username"]:
-            params.setdefault("usuario", config["username"])
-        if extra_params:
-            params.update(extra_params)
-
-        auth = None
-        auth_type = config["auth_type"]
-        if auth_type == "bearer" and config["api_key"]:
-            headers["Authorization"] = f"Bearer {config['api_key']}"
-        elif auth_type == "basic" and config["username"]:
-            auth = (config["username"], config["password"])
-        elif auth_type == "api_key_header" and config["api_key"]:
-            headers[config["api_key_name"]] = config["api_key"]
-        elif auth_type == "api_key_query" and config["api_key"]:
-            params[config["api_key_name"]] = config["api_key"]
-
-        return {
-            "headers": headers,
-            "params": params,
-            "auth": auth,
-            "timeout": config["timeout"],
-        }
+    def _validate_credentials_present(self, config):
+        missing = []
+        if not config["api_key"]:
+            missing.append("1. API Key (X-Api-Key)")
+        if not config["client_id"]:
+            missing.append("2. ClientId")
+        if not config["client_secret"]:
+            missing.append("3. ClientSecret")
+        if missing:
+            raise UserError(
+                _(
+                    "Faltan credenciales de AVA_API por configurar:\n- %s\n\n"
+                    "Ve a 'Metas y Observaciones -> Configuración AVA_API' para ingresar los 3 parámetros."
+                )
+                % "\n- ".join(missing)
+            )
 
     @api.model
-    def _extract_list(self, payload, candidate_keys):
-        if isinstance(payload, list):
-            return payload
-        if isinstance(payload, dict):
-            for key in candidate_keys:
-                if isinstance(payload.get(key), list):
-                    return payload[key]
-            # Fallback: busca el primer valor tipo lista dentro del dict
-            for val in payload.values():
-                if isinstance(val, list):
-                    return val
-        return []
+    def _get_access_token(self, config=None, force_refresh=False):
+        """
+        Obtiene o reutiliza el token JWT de 15 minutos desde POST /AVA/Token
+        enviando X-Api-Key en cabecera y {"ClientId", "ClientSecret"} en el cuerpo JSON.
+        """
+        if config is None:
+            config = self._get_api_config()
+        self._validate_credentials_present(config)
+
+        params = self.env["ir.config_parameter"].sudo()
+        now = time.time()
+
+        if not force_refresh:
+            cached_token = params.get_param("ava_api.cached_token") or ""
+            try:
+                expires_at = float(params.get_param("ava_api.token_expires_at") or 0)
+            except ValueError:
+                expires_at = 0.0
+            if cached_token and now < expires_at:
+                return cached_token
+
+        token_url = f"{config['base_url']}/AVA/Token"
+        headers = {
+            "X-Api-Key": config["api_key"],
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+        payload = {
+            "ClientId": config["client_id"],
+            "ClientSecret": config["client_secret"],
+        }
+
+        try:
+            response = requests.post(
+                token_url,
+                headers=headers,
+                json=payload,
+                timeout=config["timeout"],
+            )
+        except Exception as exc:
+            raise UserError(
+                _("No se pudo conectar con %s:\n%s") % (token_url, exc)
+            ) from exc
+
+        if response.status_code == 401:
+            raise UserError(
+                _(
+                    "Acceso denegado (401) en POST %s.\n"
+                    "Verifica que API Key (X-Api-Key), ClientId y ClientSecret sean correctos."
+                )
+                % token_url
+            )
+        if response.status_code == 429:
+            retry_after = response.headers.get("Retry-After", "900")
+            raise UserError(
+                _(
+                    "Límite de intentos excedido (429) en POST %s. "
+                    "Espera %s segundos antes de volver a intentar."
+                )
+                % (token_url, retry_after)
+            )
+
+        try:
+            response.raise_for_status()
+            data = response.json()
+        except Exception as exc:
+            raise UserError(
+                _("Respuesta inválida al solicitar token en %s (HTTP %s):\n%s")
+                % (token_url, response.status_code, response.text[:500])
+            ) from exc
+
+        access_token = data.get("access_token")
+        if not access_token:
+            raise UserError(
+                _("El servidor no devolvió 'access_token' en %s:\n%s")
+                % (token_url, data)
+            )
+
+        expires_in = int(data.get("expires_in") or 900)
+        # Guardar token en caché con margen de seguridad de 60 segundos antes de vencer
+        params.set_param("ava_api.cached_token", access_token)
+        params.set_param("ava_api.token_expires_at", str(now + max(expires_in - 60, 60)))
+        return access_token
+
+    @api.model
+    def _api_get(self, path, query_params=None, config=None):
+        """
+        Realiza una petición GET a AVA_API enviando tanto:
+        - Authorization: Bearer <access_token>
+        - X-Api-Key: <API_KEY>
+        Maneja renovación automática de token si vence (401) y espera si recibe 429.
+        """
+        if config is None:
+            config = self._get_api_config()
+
+        token = self._get_access_token(config=config, force_refresh=False)
+        url = f"{config['base_url']}{path}"
+
+        for attempt in range(2):
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "X-Api-Key": config["api_key"],
+                "Accept": "application/json",
+            }
+            try:
+                resp = requests.get(
+                    url,
+                    headers=headers,
+                    params=query_params or {},
+                    timeout=config["timeout"],
+                )
+            except Exception as exc:
+                raise UserError(
+                    _("Error de conexión al consultar %s:\n%s") % (url, exc)
+                ) from exc
+
+            if resp.status_code == 401 and attempt == 0:
+                # El token pudo haber expirado; renovamos 1 sola vez
+                token = self._get_access_token(config=config, force_refresh=True)
+                continue
+
+            if resp.status_code == 429 and attempt == 0:
+                retry_sec = min(int(resp.headers.get("Retry-After", 5) or 5), 15)
+                _logger.warning("HTTP 429 en %s, esperando %s segundos...", url, retry_sec)
+                time.sleep(retry_sec)
+                continue
+
+            if resp.status_code >= 400:
+                msg = resp.text[:400]
+                try:
+                    err_json = resp.json()
+                    msg = err_json.get("result_message") or msg
+                except Exception:
+                    pass
+                raise UserError(
+                    _("Error HTTP %s en %s:\n%s") % (resp.status_code, url, msg)
+                )
+
+            return resp.json()
+
+        raise UserError(_("No fue posible completar la consulta a %s.") % url)
+
+    @api.model
+    def _split_date_ranges_max_31_days(self, date_start, date_end):
+        """
+        Según la sección 4.1 de AVA_API, /AVA/ventas permite un rango máximo de 31 días
+        por consulta (desde / hasta inclusivo). Divide rangos mayores en bloques <= 30 días.
+        """
+        if isinstance(date_start, str):
+            start_dt = datetime.strptime(date_start[:10], "%Y-%m-%d").date()
+        else:
+            start_dt = date_start
+        if isinstance(date_end, str):
+            end_dt = datetime.strptime(date_end[:10], "%Y-%m-%d").date()
+        else:
+            end_dt = date_end
+
+        ranges = []
+        cursor = start_dt
+        while cursor <= end_dt:
+            chunk_end = min(cursor + timedelta(days=30), end_dt)
+            ranges.append((cursor.strftime("%Y-%m-%d"), chunk_end.strftime("%Y-%m-%d")))
+            cursor = chunk_end + timedelta(days=1)
+        return ranges
 
     @api.model
     def _is_excluded_return_payment(self, description):
@@ -107,160 +242,121 @@ class AvaApiService(models.AbstractModel):
         return any(pattern in norm_desc for pattern in EXCLUDED_PAYMENT_DESCRIPTIONS)
 
     @api.model
-    def _extract_amount(self, record):
-        for key in ("importe", "monto", "total", "montoPago", "importePago", "cantidad", "valor"):
-            if key in record and record[key] not in (None, ""):
-                try:
-                    val = str(record[key]).replace(",", "").replace("$", "").strip()
-                    return float(val)
-                except (ValueError, TypeError):
-                    continue
-        return 0.0
-
-    @api.model
-    def _extract_sale_id(self, record):
-        for key in ("idVenta", "id_venta", "ventaId", "id", "folio", "documento", "numeroVenta"):
-            if record.get(key) not in (None, ""):
-                return str(record[key]).strip()
-        return None
-
-    @api.model
-    def _extract_vendor_name(self, record):
-        for key in ("nombreVendedor", "nombre_vendedor", "vendedor", "agente", "nombreAgente"):
-            if record.get(key):
-                return _normalize_text(record[key])
-        return ""
-
-    @api.model
-    def _extract_payment_description(self, record):
-        for key in ("descripcion", "concepto", "tipoPago", "formaPago", "observaciones", "detalle"):
-            if record.get(key):
-                return str(record[key]).strip()
-        return ""
-
-    @api.model
     def test_connection(self):
         config = self._get_api_config()
-        url = f"{config['base_url']}/AVA/ventas"
-        req_kwargs = self._build_request_kwargs(config)
-        try:
-            response = requests.get(url, **req_kwargs)
-            response.raise_for_status()
-            return {
-                "type": "ir.actions.client",
-                "tag": "display_notification",
-                "params": {
-                    "title": _("Conexión exitosa con AVA_API"),
-                    "message": _("El endpoint %s respondió correctamente (HTTP %s).")
-                    % (url, response.status_code),
-                    "type": "success",
-                    "sticky": False,
-                },
-            }
-        except Exception as exc:
-            raise UserError(
-                _("No se pudo conectar con AVA_API (%s):\n%s") % (url, exc)
-            ) from exc
+        token = self._get_access_token(config=config, force_refresh=True)
+        catalogs_resp = self._api_get("/AVA/Catalogos", config=config)
+        catalogs = catalogs_resp.get("data", []) if isinstance(catalogs_resp, dict) else []
+        cat_codes = ", ".join(c.get("codigo", "") for c in catalogs if isinstance(c, dict)) or "OK"
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": _("¡Conexión y Token Exitosos!"),
+                "message": _(
+                    "Token JWT emitido correctamente en POST /AVA/Token (%s...). "
+                    "Catálogos activos en /AVA/Catalogos: %s"
+                )
+                % (token[:15], cat_codes),
+                "type": "success",
+                "sticky": False,
+            },
+        }
 
     @api.model
     def fetch_agent_sales_and_payments(self, nombre_alias, date_start, date_end):
         """
-        Consulta /AVA/ventas filtrando por nombreVendedor == nombre_alias
-        y calcula el total de ventas computables desde /AVA/ventas/pagos,
-        excluyendo los pagos cuya descripción contenga '99 NOTA DE DEVOLUCI'
-        o 'DEVOLUCION DE PRODUCTO'.
+        1. Obtiene token JWT con POST /AVA/Token (X-Api-Key + ClientId + ClientSecret).
+        2. Consulta GET /AVA/ventas?desde=YYYY-MM-DD&hasta=YYYY-MM-DD&estatus=A
+           y filtra por nombreVendedor == nombre_alias.
+        3. Por cada venta del vendedor, consulta GET /AVA/ventas/pagos?tipo=...&caja=...&serie=...&folio=...
+           y suma 'importe' excluyendo los pagos cuya 'descripcion' contenga:
+           - '99 NOTA DE DEVOLUCI'
+           - 'DEVOLUCION DE PRODUCTO'
         """
         target_alias = _normalize_text(nombre_alias)
         if not target_alias:
             raise UserError(
-                _("La trabajadora no tiene configurado un 'Nombre Alias' para empatar con 'nombreVendedor' en AVA_API.")
+                _("La trabajadora no tiene configurado un 'Nombre Alias' para empatar con 'nombreVendedor' en /AVA/ventas.")
             )
 
         config = self._get_api_config()
-        start_str = str(date_start) if date_start else ""
-        end_str = str(date_end) if date_end else ""
+        date_chunks = self._split_date_ranges_max_31_days(date_start, date_end)
 
-        query_dates = {
-            "fechaInicio": start_str,
-            "fechaFin": end_str,
-            "fecha_inicio": start_str,
-            "fecha_fin": end_str,
-            "nombreVendedor": nombre_alias.strip(),
-        }
-
-        # 1. Consultar /AVA/ventas
-        ventas_url = f"{config['base_url']}/AVA/ventas"
-        ventas_kwargs = self._build_request_kwargs(config, extra_params=query_dates)
-        try:
-            ventas_resp = requests.get(ventas_url, **ventas_kwargs)
-            ventas_resp.raise_for_status()
-            ventas_payload = ventas_resp.json()
-        except Exception as exc:
-            _logger.error("Error consultando %s: %s", ventas_url, exc)
-            raise UserError(
-                _("Error al consultar el endpoint de ventas (%s):\n%s") % (ventas_url, exc)
-            ) from exc
-
-        all_sales = self._extract_list(ventas_payload, ("ventas", "registros", "data", "items"))
         matched_sales = []
-        matched_sale_ids = set()
-
-        for sale in all_sales:
-            if not isinstance(sale, dict):
-                continue
-            vendor = self._extract_vendor_name(sale)
-            if vendor == target_alias:
-                matched_sales.append(sale)
-                sale_id = self._extract_sale_id(sale)
-                if sale_id:
-                    matched_sale_ids.add(sale_id)
-
-        # 2. Consultar /AVA/ventas/pagos
-        pagos_url = f"{config['base_url']}/AVA/ventas/pagos"
-        pagos_kwargs = self._build_request_kwargs(config, extra_params=query_dates)
-        try:
-            pagos_resp = requests.get(pagos_url, **pagos_kwargs)
-            pagos_resp.raise_for_status()
-            pagos_payload = pagos_resp.json()
-        except Exception as exc:
-            _logger.error("Error consultando %s: %s", pagos_url, exc)
-            raise UserError(
-                _("Error al consultar el endpoint de pagos (%s):\n%s") % (pagos_url, exc)
-            ) from exc
-
-        all_payments = self._extract_list(pagos_payload, ("pagos", "registros", "data", "items"))
+        for desde_str, hasta_str in date_chunks:
+            ventas_payload = self._api_get(
+                "/AVA/ventas",
+                query_params={
+                    "desde": desde_str,
+                    "hasta": hasta_str,
+                    "estatus": "A",
+                },
+                config=config,
+            )
+            sales_list = ventas_payload if isinstance(ventas_payload, list) else ventas_payload.get("ventas", [])
+            for sale in sales_list:
+                if not isinstance(sale, dict):
+                    continue
+                vendor_name = _normalize_text(sale.get("nombreVendedor"))
+                if vendor_name == target_alias:
+                    matched_sales.append(sale)
 
         valid_sales_amount = 0.0
         excluded_returns_amount = 0.0
         valid_payments_count = 0
         excluded_payments_count = 0
 
-        for payment in all_payments:
-            if not isinstance(payment, dict):
+        # Consultar /AVA/ventas/pagos por cada venta del vendedor
+        for idx, sale in enumerate(matched_sales, start=1):
+            # Control preventivo de rate-limit (máximo 60 GET por minuto según sección 1.3)
+            if idx % 50 == 0:
+                time.sleep(1.2)
+
+            tipo = str(sale.get("tipo") or "").strip()
+            caja = str(sale.get("caja") or "").strip()
+            serie = str(sale.get("serie") or "").strip()
+            folio = str(sale.get("folio") or "").strip()
+            if folio.isdigit() and len(folio) < 6:
+                folio = folio.zfill(6)
+
+            if not (tipo and caja and folio):
                 continue
 
-            # Verificar si el pago pertenece al vendedor por nombreVendedor o por idVenta empatado en /AVA/ventas
-            payment_vendor = self._extract_vendor_name(payment)
-            payment_sale_id = self._extract_sale_id(payment)
+            pago_params = {
+                "tipo": tipo,
+                "caja": caja,
+                "folio": folio,
+            }
+            if serie:
+                pago_params["serie"] = serie
 
-            belongs_to_agent = False
-            if payment_vendor:
-                belongs_to_agent = (payment_vendor == target_alias)
-            elif payment_sale_id and matched_sale_ids:
-                belongs_to_agent = (payment_sale_id in matched_sale_ids)
+            pagos_payload = self._api_get(
+                "/AVA/ventas/pagos",
+                query_params=pago_params,
+                config=config,
+            )
+            pagos_list = (
+                pagos_payload.get("pagos", [])
+                if isinstance(pagos_payload, dict)
+                else (pagos_payload if isinstance(pagos_payload, list) else [])
+            )
 
-            if not belongs_to_agent:
-                continue
+            for payment in pagos_list:
+                if not isinstance(payment, dict):
+                    continue
+                try:
+                    importe = float(payment.get("importe") or 0.0)
+                except (ValueError, TypeError):
+                    importe = 0.0
+                descripcion = str(payment.get("descripcion") or "").strip()
 
-            amount = self._extract_amount(payment)
-            description = self._extract_payment_description(payment)
-
-            if self._is_excluded_return_payment(description):
-                excluded_returns_amount += amount
-                excluded_payments_count += 1
-            else:
-                valid_sales_amount += amount
-                valid_payments_count += 1
+                if self._is_excluded_return_payment(descripcion):
+                    excluded_returns_amount += importe
+                    excluded_payments_count += 1
+                else:
+                    valid_sales_amount += importe
+                    valid_payments_count += 1
 
         return {
             "matched_sales_count": len(matched_sales),
@@ -269,4 +365,3 @@ class AvaApiService(models.AbstractModel):
             "valid_sales_amount": round(valid_sales_amount, 2),
             "excluded_returns_amount": round(excluded_returns_amount, 2),
         }
-

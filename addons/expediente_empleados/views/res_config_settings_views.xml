@@ -15,7 +15,7 @@
                             icon="fa-save"/>
                     <button name="action_test_ava_api_connection"
                             type="object"
-                            string="Probar Conexión con AVA_API"
+                            string="Probar Token y Conexión con AVA_API"
                             class="btn-secondary"
                             icon="fa-plug"/>
                 </header>
@@ -23,22 +23,20 @@
                     <div class="oe_title">
                         <h1>Configuración de Acceso a AVA_API</h1>
                         <p class="text-muted">
-                            Configura aquí el servidor (<code>https://sistemainforweb.com</code>) y las claves/credenciales para consultar
-                            <code>/AVA/ventas</code> y <code>/AVA/ventas/pagos</code>.
+                            Ingresa los <strong>3 parámetros</strong> entregados para la API:
+                            <strong>1. API Key</strong> (cabecera <code>X-Api-Key</code>),
+                            <strong>2. ClientId</strong> y <strong>3. ClientSecret</strong> (cuerpo JSON en <code>POST /AVA/Token</code>).
                         </p>
                     </div>
                     <group>
-                        <group string="Servidor y Catálogo">
-                            <field name="ava_api_base_url" placeholder="https://sistemainforweb.com"/>
-                            <field name="ava_api_catalogo" placeholder="AVA01"/>
-                            <field name="ava_api_timeout"/>
+                        <group string="Los 3 Parámetros de Autenticación (POST /AVA/Token)">
+                            <field name="ava_api_key" password="True" placeholder="Pega aquí tu API Key (cabecera X-Api-Key)"/>
+                            <field name="ava_api_client_id" placeholder="Pega aquí tu ClientId"/>
+                            <field name="ava_api_client_secret" password="True" placeholder="Pega aquí tu ClientSecret"/>
                         </group>
-                        <group string="Claves y Credenciales de Acceso">
-                            <field name="ava_api_auth_type"/>
-                            <field name="ava_api_username" placeholder="Ej. ADMIN"/>
-                            <field name="ava_api_password" password="True" placeholder="Contraseña o Clave Secreta"/>
-                            <field name="ava_api_key" password="True" placeholder="Bearer Token o API Key"/>
-                            <field name="ava_api_key_name" placeholder="Ej. X-API-Key o Authorization"/>
+                        <group string="Servidor y Tiempo de Espera">
+                            <field name="ava_api_base_url" placeholder="https://sistemainforweb.com"/>
+                            <field name="ava_api_timeout"/>
                         </group>
                     </group>
                     <separator string="Texto Legal por Defecto: Sección II (Objeto del Esquema Mensual)"/>
@@ -62,36 +60,24 @@
         <field name="arch" type="xml">
             <xpath expr="//block[@name='employees_setting_container']" position="after">
                 <block title="AVA_API y Esquema Mensual de Metas Comerciales" name="ava_api_sales_scheme_settings">
-                    <setting string="Conexión y Claves de AVA_API (/AVA/ventas y /AVA/ventas/pagos)"
-                             help="Configura la URL (https://sistemainforweb.com) y las claves de acceso para consultar las ventas y pagos de cada agente.">
+                    <setting string="3 Parámetros de Acceso a AVA_API (/AVA/Token, /AVA/ventas y /AVA/ventas/pagos)"
+                             help="Configura API Key (X-Api-Key), ClientId y ClientSecret para obtener el access_token en POST /AVA/Token.">
                         <div class="content-group mt16">
                             <div class="row mt8">
                                 <label for="ava_api_base_url" class="col-lg-4 o_light_label"/>
                                 <field name="ava_api_base_url" placeholder="https://sistemainforweb.com"/>
                             </div>
                             <div class="row mt8">
-                                <label for="ava_api_catalogo" class="col-lg-4 o_light_label"/>
-                                <field name="ava_api_catalogo" placeholder="AVA01"/>
-                            </div>
-                            <div class="row mt8">
-                                <label for="ava_api_auth_type" class="col-lg-4 o_light_label"/>
-                                <field name="ava_api_auth_type"/>
-                            </div>
-                            <div class="row mt8">
-                                <label for="ava_api_username" class="col-lg-4 o_light_label"/>
-                                <field name="ava_api_username"/>
-                            </div>
-                            <div class="row mt8">
-                                <label for="ava_api_password" class="col-lg-4 o_light_label"/>
-                                <field name="ava_api_password" password="True"/>
-                            </div>
-                            <div class="row mt8">
                                 <label for="ava_api_key" class="col-lg-4 o_light_label"/>
                                 <field name="ava_api_key" password="True"/>
                             </div>
                             <div class="row mt8">
-                                <label for="ava_api_key_name" class="col-lg-4 o_light_label"/>
-                                <field name="ava_api_key_name"/>
+                                <label for="ava_api_client_id" class="col-lg-4 o_light_label"/>
+                                <field name="ava_api_client_id"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="ava_api_client_secret" class="col-lg-4 o_light_label"/>
+                                <field name="ava_api_client_secret" password="True"/>
                             </div>
                             <div class="row mt8">
                                 <label for="ava_api_timeout" class="col-lg-4 o_light_label"/>
@@ -100,7 +86,7 @@
                             <div class="mt16">
                                 <button name="action_test_ava_api_connection"
                                         type="object"
-                                        string="Probar Conexión con AVA_API"
+                                        string="Probar Token y Conexión con AVA_API"
                                         class="btn-secondary"
                                         icon="fa-plug"/>
                             </div>
