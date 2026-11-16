@@ -8,3 +8,7 @@ access_hr_sales_incentive_line_user,hr.sales.incentive.line.user,model_hr_sales_
 access_hr_sales_weekly_review_user,hr.sales.weekly.review.user,model_hr_sales_weekly_review,hr.group_hr_user,1,1,1,1
 access_hr_sales_legal_observation_user,hr.sales.legal.observation.user,model_hr_sales_legal_observation,hr.group_hr_user,1,1,1,0
 access_hr_sales_legal_observation_manager,hr.sales.legal.observation.manager,model_hr_sales_legal_observation,hr.group_hr_manager,1,1,1,1
+access_hr_performance_question_user,hr.performance.question.user,model_hr_performance_question,hr.group_hr_user,1,1,1,1
+access_hr_performance_evaluation_user,hr.performance.evaluation.user,model_hr_performance_evaluation,hr.group_hr_user,1,1,1,0
+access_hr_performance_evaluation_manager,hr.performance.evaluation.manager,model_hr_performance_evaluation,hr.group_hr_manager,1,1,1,1
+access_hr_performance_evaluation_line_user,hr.performance.evaluation.line.user,model_hr_performance_evaluation_line,hr.group_hr_user,1,1,1,1

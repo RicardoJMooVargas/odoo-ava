@@ -330,6 +330,11 @@ class HrSalesScheme(models.Model):
         "scheme_id",
         string="VIII. Resultados, Desviaciones y Medidas de Mejora",
     )
+    performance_evaluation_ids = fields.One2many(
+        "hr.performance.evaluation",
+        "scheme_id",
+        string="Formatos de Evaluación del Empleado",
+    )
     weekly_review_count = fields.Integer(
         compute="_compute_child_counts",
         string="Revisiones Semanales",
@@ -337,6 +342,10 @@ class HrSalesScheme(models.Model):
     observation_count = fields.Integer(
         compute="_compute_child_counts",
         string="Observaciones Legales",
+    )
+    evaluation_count = fields.Integer(
+        compute="_compute_child_counts",
+        string="Evaluaciones de Desempeño",
     )
 
     # ── X. ALCANCE, ACEPTACIÓN Y DOCUMENTO PDF FIRMADO ────────────────────────
@@ -487,11 +496,12 @@ class HrSalesScheme(models.Model):
             else:
                 rec.evaluation_level = "meta_superada"
 
-    @api.depends("weekly_review_ids", "legal_observation_ids")
+    @api.depends("weekly_review_ids", "legal_observation_ids", "performance_evaluation_ids")
     def _compute_child_counts(self):
         for rec in self:
             rec.weekly_review_count = len(rec.weekly_review_ids)
             rec.observation_count = len(rec.legal_observation_ids)
+            rec.evaluation_count = len(rec.performance_evaluation_ids)
 
     @api.constrains("period_start", "period_end")
     def _check_period_dates(self):
@@ -543,6 +553,25 @@ class HrSalesScheme(models.Model):
     def action_close_scheme(self):
         for rec in self:
             rec.state = "cerrado"
+
+    def action_create_performance_evaluation(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Nuevo Formato de Evaluación del Empleado"),
+            "res_model": "hr.performance.evaluation",
+            "view_mode": "form",
+            "target": "current",
+            "context": {
+                "default_scheme_id": self.id,
+                "default_employee_id": self.employee_id.id,
+                "default_job_title": self.job_title,
+                "default_area_name": self.area_name,
+                "default_manager_id": self.manager_id.id,
+                "default_period_start": self.period_start,
+                "default_period_end": self.period_end,
+            },
+        }
 
     def action_reset_draft(self):
         for rec in self:

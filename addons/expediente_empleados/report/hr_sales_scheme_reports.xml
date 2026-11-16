@@ -25,6 +25,17 @@
         <field name="binding_type">report</field>
     </record>
 
+    <record id="action_report_hr_performance_evaluation" model="ir.actions.report">
+        <field name="name">Imprimir Formato de Evaluación del Empleado (PDF)</field>
+        <field name="model">hr.performance.evaluation</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">expediente_empleados.report_hr_performance_evaluation_document</field>
+        <field name="report_file">expediente_empleados.report_hr_performance_evaluation_document</field>
+        <field name="print_report_name">'EVALUACION_DESEMPENO_%s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_hr_performance_evaluation"/>
+        <field name="binding_type">report</field>
+    </record>
+
     <!-- ═══════════════════════════════════════════════════════════════════════
          2. PLANTILLA QWEB: ESQUEMA MENSUAL DE METAS COMERCIALES
          ═══════════════════════════════════════════════════════════════════════ -->
@@ -348,6 +359,180 @@
                                     <strong>TESTIGO</strong><br/><br/><br/>
                                     _____________________________________<br/>
                                     <span t-field="o.witness_2"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         4. PLANTILLA QWEB: FORMATO DE EVALUACIÓN DEL EMPLEADO
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <template id="report_hr_performance_evaluation_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.basic_layout">
+                    <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 12px; color: #000;">
+                        <!-- Encabezado estilo formato de evaluación -->
+                        <table style="width: 100%; border-collapse: collapse; border: 2px solid #000; margin-bottom: 0;">
+                            <tr>
+                                <td style="width: 35%; padding: 10px; vertical-align: middle; text-align: center; border-right: 1px solid #000;">
+                                    <strong style="font-size: 15px;">AVA</strong><br/>
+                                    <span style="font-size: 11px;">ARMANDO VIDRIOS Y ALUMINIOS S.A. DE C.V.</span>
+                                </td>
+                                <td style="width: 65%; padding: 0; vertical-align: top;">
+                                    <div style="background-color: #f49c52; padding: 6px 10px; font-weight: bold; font-size: 13px; border-bottom: 1px solid #000;">
+                                        FORMATO DE EVALUACIÓN DEL EMPLEADO
+                                    </div>
+                                    <div style="padding: 6px 10px; font-size: 11px; line-height: 1.4;">
+                                        <strong>ARMANDO VIDRIOS Y ALUMINIOS S.A. DE C.V.</strong><br/>
+                                        RFC: AVA2502042E4 · Calle 8, número 32, entre calle 5 y calle 1<br/>
+                                        Colonia Carmelo, C.P. 24075, Campeche, Campeche.
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <div style="background-color: #b5a6c9; height: 14px; border-left: 2px solid #000; border-right: 2px solid #000;"/>
+
+                        <!-- Datos del Empleado y Periodo -->
+                        <table style="width: 100%; border-collapse: collapse; border: 2px solid #000;">
+                            <tr>
+                                <td style="width: 48%; border: 1px solid #000; padding: 5px 8px;">
+                                    <strong>Nombre del empleado:</strong> <span t-field="o.employee_id.name"/>
+                                </td>
+                                <td style="width: 52%; border: 1px solid #000; padding: 5px 8px;">
+                                    <strong>Evaluador / Responsable:</strong> <span t-field="o.manager_id.name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #000; padding: 5px 8px;">
+                                    <strong>Cargo:</strong> <span t-field="o.job_title"/> (<span t-field="o.area_name"/>)
+                                </td>
+                                <td style="border: 1px solid #000; padding: 5px 8px;">
+                                    <strong>Periodo calificado:</strong> <span t-field="o.period_display"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #000; padding: 5px 8px;">
+                                    <strong>Fecha de elaboración:</strong> <span t-field="o.evaluation_date"/>
+                                </td>
+                                <td style="border: 1px solid #000; padding: 5px 8px;">
+                                    <strong>Esquema vinculado:</strong>
+                                    <t t-if="o.scheme_id"><span t-field="o.scheme_id.name"/></t>
+                                    <t t-else="">N/A</t>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="background-color: #f8cbad; border: 1px solid #000; padding: 6px 8px;">
+                                    <strong>OBJETIVO:</strong> <span t-field="o.objective_text"/>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Tabla de Competencias y Escala 1 a 4 -->
+                        <table style="width: 100%; border-collapse: collapse; border: 2px solid #000; margin-top: -1px;">
+                            <thead>
+                                <tr style="text-align: center; font-weight: bold;">
+                                    <th rowspan="2" style="width: 52%; border: 1px solid #000; padding: 8px; vertical-align: middle;">
+                                        ÁREA DEL DESEMPEÑO
+                                    </th>
+                                    <th style="width: 12%; border: 1px solid #000; padding: 4px;">MUY BAJO</th>
+                                    <th style="width: 12%; border: 1px solid #000; padding: 4px;">BAJO</th>
+                                    <th style="width: 12%; border: 1px solid #000; padding: 4px;">MODERADO</th>
+                                    <th style="width: 12%; border: 1px solid #000; padding: 4px;">ALTO</th>
+                                </tr>
+                                <tr style="text-align: center; font-weight: bold;">
+                                    <th style="border: 1px solid #000; padding: 4px;">1</th>
+                                    <th style="border: 1px solid #000; padding: 4px;">2</th>
+                                    <th style="border: 1px solid #000; padding: 4px;">3</th>
+                                    <th style="border: 1px solid #000; padding: 4px;">4</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o._get_grouped_lines_for_report()" t-as="group">
+                                    <tr style="background-color: #f2f2f2; font-weight: bold;">
+                                        <td style="border: 1px solid #000; padding: 5px 8px;">
+                                            <span t-esc="group['section']"/>
+                                        </td>
+                                        <td style="border: 1px solid #000;"/>
+                                        <td style="border: 1px solid #000;"/>
+                                        <td style="border: 1px solid #000;"/>
+                                        <td style="border: 1px solid #000;"/>
+                                    </tr>
+                                    <t t-foreach="group['lines']" t-as="line">
+                                        <tr>
+                                            <td style="border: 1px solid #000; padding: 4px 8px;">
+                                                <span t-field="line.question_name"/>
+                                            </td>
+                                            <td style="border: 1px solid #000; text-align: center; font-weight: bold;">
+                                                <t t-if="line.score == '1'">X</t>
+                                            </td>
+                                            <td style="border: 1px solid #000; text-align: center; font-weight: bold;">
+                                                <t t-if="line.score == '2'">X</t>
+                                            </td>
+                                            <td style="border: 1px solid #000; text-align: center; font-weight: bold;">
+                                                <t t-if="line.score == '3'">X</t>
+                                            </td>
+                                            <td style="border: 1px solid #000; text-align: center; font-weight: bold;">
+                                                <t t-if="line.score == '4'">X</t>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </t>
+
+                                <!-- Fila PUNTAJE TOTAL por columna y global -->
+                                <tr style="font-weight: bold; background-color: #eaeaea;">
+                                    <td style="border: 1px solid #000; padding: 6px 8px;">
+                                        PUNTAJE TOTAL:
+                                        <span style="float: right;">
+                                            <span t-field="o.total_score"/> / <span t-field="o.max_possible_score"/> pts
+                                            (<span t-esc="'{:.1f}%'.format(o.score_percentage)"/> - <span t-field="o.overall_level"/>)
+                                        </span>
+                                    </td>
+                                    <td style="border: 1px solid #000; text-align: center; padding: 6px;">
+                                        <span t-field="o.subtotal_col_1"/>
+                                    </td>
+                                    <td style="border: 1px solid #000; text-align: center; padding: 6px;">
+                                        <span t-field="o.subtotal_col_2"/>
+                                    </td>
+                                    <td style="border: 1px solid #000; text-align: center; padding: 6px;">
+                                        <span t-field="o.subtotal_col_3"/>
+                                    </td>
+                                    <td style="border: 1px solid #000; text-align: center; padding: 6px;">
+                                        <span t-field="o.subtotal_col_4"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div style="background-color: #b5a6c9; height: 14px; border: 2px solid #000; border-top: none;"/>
+
+                        <t t-if="o.general_comments or o.employee_comments">
+                            <div style="border: 1px solid #000; padding: 8px; margin-top: 10px;">
+                                <t t-if="o.general_comments">
+                                    <strong>Observaciones del Evaluador:</strong> <span t-field="o.general_comments"/><br/>
+                                </t>
+                                <t t-if="o.employee_comments">
+                                    <strong>Comentarios del Empleado:</strong> <span t-field="o.employee_comments"/>
+                                </t>
+                            </div>
+                        </t>
+
+                        <table style="width: 100%; margin-top: 35px; text-align: center; border: none;">
+                            <tr>
+                                <td style="width: 50%; padding: 15px;">
+                                    <strong>FIRMA DEL EMPLEADO EVALUADO</strong><br/><br/><br/>
+                                    _____________________________________<br/>
+                                    <span t-field="o.employee_id.name"/>
+                                </td>
+                                <td style="width: 50%; padding: 15px;">
+                                    <strong>FIRMA DEL EVALUADOR / GERENTE</strong><br/><br/><br/>
+                                    _____________________________________<br/>
+                                    <span t-field="o.manager_id.name"/>
                                 </td>
                             </tr>
                         </table>

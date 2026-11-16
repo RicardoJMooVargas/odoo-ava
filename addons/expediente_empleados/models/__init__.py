@@ -5,3 +5,4 @@ from . import hr_employee
 from . import hr_sales_scheme
 from . import hr_sales_weekly_review
 from . import hr_sales_legal_observation
+from . import hr_performance_evaluation

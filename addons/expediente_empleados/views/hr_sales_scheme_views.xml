@@ -35,6 +35,12 @@
                             class="btn-warning"
                             icon="fa-gavel"
                             invisible="state == 'cancelado'"/>
+                    <button name="action_create_performance_evaluation"
+                            string="Crear Evaluación de Desempeño"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-star"
+                            invisible="state == 'cancelado'"/>
                     <button name="action_close_scheme"
                             string="Cerrar Periodo"
                             type="object"
@@ -110,6 +116,23 @@
                                            decoration-warning="state == 'en_seguimiento'"
                                            decoration-success="state == 'cumplido'"
                                            decoration-danger="state == 'incumplido'"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Evaluaciones de Desempeño" name="performance_evaluations">
+                            <field name="performance_evaluation_ids"
+                                   context="{'default_scheme_id': id, 'default_employee_id': employee_id, 'default_period_start': period_start, 'default_period_end': period_end}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="evaluation_date"/>
+                                    <field name="manager_id"/>
+                                    <field name="period_display"/>
+                                    <field name="total_score"/>
+                                    <field name="max_possible_score"/>
+                                    <field name="score_percentage"/>
+                                    <field name="overall_level" widget="badge"/>
+                                    <field name="state" widget="badge"/>
                                 </list>
                             </field>
                         </page>

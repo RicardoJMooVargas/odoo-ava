@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- ORIENTACIÓN DE RESULTADOS -->
+        <record id="perf_q_01" model="hr.performance.question">
+            <field name="sequence">10</field>
+            <field name="section_name">ORIENTACIÓN DE RESULTADOS</field>
+            <field name="name">Termina su trabajo oportunamente</field>
+        </record>
+        <record id="perf_q_02" model="hr.performance.question">
+            <field name="sequence">20</field>
+            <field name="section_name">ORIENTACIÓN DE RESULTADOS</field>
+            <field name="name">Cumple con las tareas que se le encomienda</field>
+        </record>
+        <record id="perf_q_03" model="hr.performance.question">
+            <field name="sequence">30</field>
+            <field name="section_name">ORIENTACIÓN DE RESULTADOS</field>
+            <field name="name">Realiza un volumen adecuado de trabajo</field>
+        </record>
+
+        <!-- CALIDAD -->
+        <record id="perf_q_04" model="hr.performance.question">
+            <field name="sequence">40</field>
+            <field name="section_name">CALIDAD</field>
+            <field name="name">No comete errores en el trabajo</field>
+        </record>
+        <record id="perf_q_05" model="hr.performance.question">
+            <field name="sequence">50</field>
+            <field name="section_name">CALIDAD</field>
+            <field name="name">Hace uso racional de los recursos</field>
+        </record>
+        <record id="perf_q_06" model="hr.performance.question">
+            <field name="sequence">60</field>
+            <field name="section_name">CALIDAD</field>
+            <field name="name">No requiere de supervisión frecuente</field>
+        </record>
+        <record id="perf_q_07" model="hr.performance.question">
+            <field name="sequence">70</field>
+            <field name="section_name">CALIDAD</field>
+            <field name="name">Se muestra profesional en el trabajo</field>
+        </record>
+        <record id="perf_q_08" model="hr.performance.question">
+            <field name="sequence">80</field>
+            <field name="section_name">CALIDAD</field>
+            <field name="name">Se muestra respetuoso y amable en el trato</field>
+        </record>
+
+        <!-- RELACIONES INTERPERSONALES -->
+        <record id="perf_q_09" model="hr.performance.question">
+            <field name="sequence">90</field>
+            <field name="section_name">RELACIONES INTERPERSONALES</field>
+            <field name="name">Se muestra cortés con el personal y con sus compañeros</field>
+        </record>
+        <record id="perf_q_10" model="hr.performance.question">
+            <field name="sequence">100</field>
+            <field name="section_name">RELACIONES INTERPERSONALES</field>
+            <field name="name">Brinda una adecuada orientación a sus compañeros</field>
+        </record>
+        <record id="perf_q_11" model="hr.performance.question">
+            <field name="sequence">110</field>
+            <field name="section_name">RELACIONES INTERPERSONALES</field>
+            <field name="name">Evita los conflictos dentro del trabajo</field>
+        </record>
+
+        <!-- INICIATIVA -->
+        <record id="perf_q_12" model="hr.performance.question">
+            <field name="sequence">120</field>
+            <field name="section_name">INICIATIVA</field>
+            <field name="name">Muestra nuevas ideas para mejorar los procesos</field>
+        </record>
+        <record id="perf_q_13" model="hr.performance.question">
+            <field name="sequence">130</field>
+            <field name="section_name">INICIATIVA</field>
+            <field name="name">Se muestra asequible al cambio</field>
+        </record>
+        <record id="perf_q_14" model="hr.performance.question">
+            <field name="sequence">140</field>
+            <field name="section_name">INICIATIVA</field>
+            <field name="name">Se anticipa a las dificultades</field>
+        </record>
+        <record id="perf_q_15" model="hr.performance.question">
+            <field name="sequence">150</field>
+            <field name="section_name">INICIATIVA</field>
+            <field name="name">Tiene gran capacidad para resolver problemas</field>
+        </record>
+
+        <!-- TRABAJO EN EQUIPO -->
+        <record id="perf_q_16" model="hr.performance.question">
+            <field name="sequence">160</field>
+            <field name="section_name">TRABAJO EN EQUIPO</field>
+            <field name="name">Muestra aptitud para integrarse al equipo</field>
+        </record>
+        <record id="perf_q_17" model="hr.performance.question">
+            <field name="sequence">170</field>
+            <field name="section_name">TRABAJO EN EQUIPO</field>
+            <field name="name">Se identifica fácilmente con los objetivos del equipo</field>
+        </record>
+
+        <!-- ORGANIZACIÓN -->
+        <record id="perf_q_18" model="hr.performance.question">
+            <field name="sequence">180</field>
+            <field name="section_name">ORGANIZACIÓN</field>
+            <field name="name">Planifica sus actividades</field>
+        </record>
+        <record id="perf_q_19" model="hr.performance.question">
+            <field name="sequence">190</field>
+            <field name="section_name">ORGANIZACIÓN</field>
+            <field name="name">Hace uso de indicadores</field>
+        </record>
+        <record id="perf_q_20" model="hr.performance.question">
+            <field name="sequence">200</field>
+            <field name="section_name">ORGANIZACIÓN</field>
+            <field name="name">Se preocupa por alcanzar las metas</field>
+        </record>
+    </data>
+</odoo>

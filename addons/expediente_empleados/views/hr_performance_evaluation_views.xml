@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         1. VISTAS DEL FORMATO DE EVALUACIÓN DEL EMPLEADO
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_hr_performance_evaluation_form" model="ir.ui.view">
+        <field name="name">hr.performance.evaluation.form</field>
+        <field name="model">hr.performance.evaluation</field>
+        <field name="arch" type="xml">
+            <form string="Formato de Evaluación del Empleado">
+                <header>
+                    <button name="action_print_evaluation_pdf"
+                            string="Imprimir Formato de Evaluación (PDF)"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-print"/>
+                    <button name="action_confirm_evaluation"
+                            string="Confirmar Evaluación"
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'borrador'"/>
+                    <button name="action_reload_default_questions"
+                            string="Recargar Preguntas del Catálogo"
+                            type="object"
+                            icon="fa-refresh"
+                            invisible="state != 'borrador'"
+                            confirm="¿Deseas reemplazar las preguntas actuales por las preguntas activas del catálogo?"/>
+                    <button name="action_close_evaluation"
+                            string="Cerrar Evaluación"
+                            type="object"
+                            invisible="state != 'confirmado'"/>
+                    <button name="action_reset_draft"
+                            string="Volver a Borrador"
+                            type="object"
+                            groups="hr.group_hr_manager"
+                            invisible="state == 'borrador'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="borrador,confirmado,cerrado"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Formato de Evaluación del Empleado"/>
+                        <h1>
+                            <field name="name" placeholder="Ej. EVAL-2026-11 - Nombre del Empleado"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Datos del Empleado">
+                            <field name="employee_id" readonly="state != 'borrador'"/>
+                            <field name="job_title" readonly="state != 'borrador'"/>
+                            <field name="area_name" readonly="state != 'borrador'"/>
+                            <field name="manager_id" readonly="state != 'borrador'"/>
+                            <field name="evaluation_date" readonly="state != 'borrador'"/>
+                        </group>
+                        <group string="Periodo Calificado y Vínculo con Meta Mensual">
+                            <field name="scheme_id"
+                                   domain="[('employee_id', '=', employee_id)]"
+                                   placeholder="Opcional: selecciona el esquema mensual..."
+                                   readonly="state != 'borrador'"/>
+                            <field name="period_start" readonly="state != 'borrador'"/>
+                            <field name="period_end" readonly="state != 'borrador'"/>
+                            <field name="period_display" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Objetivo de la Evaluación">
+                        <field name="objective_text" nolabel="1" colspan="2" readonly="state != 'borrador'"/>
+                    </group>
+
+                    <notebook>
+                        <page string="Cuestionario y Calificación (Escala 1 a 4)" name="questions">
+                            <field name="line_ids" readonly="state != 'borrador'">
+                                <list editable="bottom"
+                                      decoration-danger="score == '1'"
+                                      decoration-warning="score == '2'"
+                                      decoration-info="score == '3'"
+                                      decoration-success="score == '4'">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="question_id" optional="hide" string="Plantilla"/>
+                                    <field name="section_name" string="Área del Desempeño"/>
+                                    <field name="question_name" string="Competencia / Pregunta"/>
+                                    <field name="score" string="Calificación"/>
+                                    <field name="col_1_mark" string="MUY BAJO (1)" readonly="1"/>
+                                    <field name="col_2_mark" string="BAJO (2)" readonly="1"/>
+                                    <field name="col_3_mark" string="MODERADO (3)" readonly="1"/>
+                                    <field name="col_4_mark" string="ALTO (4)" readonly="1"/>
+                                    <field name="score_int" string="Puntos" sum="PUNTAJE TOTAL"/>
+                                    <field name="notes" optional="show" placeholder="Observación opcional..."/>
+                                </list>
+                            </field>
+
+                            <group string="Resumen de Puntaje Total (Cálculo del Formato)" col="4" class="mt16">
+                                <field name="subtotal_col_1" string="Total MUY BAJO (Col. 1)"/>
+                                <field name="subtotal_col_2" string="Total BAJO (Col. 2)"/>
+                                <field name="subtotal_col_3" string="Total MODERADO (Col. 3)"/>
+                                <field name="subtotal_col_4" string="Total ALTO (Col. 4)"/>
+                                <field name="total_score" class="fw-bold"/>
+                                <field name="max_possible_score"/>
+                                <field name="score_percentage"/>
+                                <field name="overall_level"
+                                       widget="badge"
+                                       decoration-danger="overall_level == 'muy_bajo'"
+                                       decoration-warning="overall_level == 'bajo'"
+                                       decoration-info="overall_level == 'moderado'"
+                                       decoration-success="overall_level == 'alto'"/>
+                            </group>
+                        </page>
+
+                        <page string="Comentarios y Documento Firmado (PDF)" name="comments_and_pdf">
+                            <group>
+                                <group string="Observaciones de la Evaluación">
+                                    <field name="general_comments" placeholder="Observaciones del Gerente de Ventas / Evaluador..."/>
+                                    <field name="employee_comments" placeholder="Comentarios o compromisos del empleado..."/>
+                                </group>
+                                <group string="Subida del Formato Firmado en PDF">
+                                    <field name="signed_evaluation_pdf_ids"
+                                           widget="many2many_binary"
+                                           string="Formato de Evaluación Firmado (PDF)"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_hr_performance_evaluation_list" model="ir.ui.view">
+        <field name="name">hr.performance.evaluation.list</field>
+        <field name="model">hr.performance.evaluation</field>
+        <field name="arch" type="xml">
+            <list string="Formatos de Evaluación del Empleado"
+                  decoration-danger="overall_level == 'muy_bajo'"
+                  decoration-warning="overall_level == 'bajo'"
+                  decoration-success="overall_level == 'alto'">
+                <field name="name"/>
+                <field name="evaluation_date"/>
+                <field name="employee_id"/>
+                <field name="job_title" optional="show"/>
+                <field name="manager_id" optional="show"/>
+                <field name="scheme_id" optional="show"/>
+                <field name="period_display"/>
+                <field name="subtotal_col_1" optional="hide" string="Col 1"/>
+                <field name="subtotal_col_2" optional="hide" string="Col 2"/>
+                <field name="subtotal_col_3" optional="hide" string="Col 3"/>
+                <field name="subtotal_col_4" optional="hide" string="Col 4"/>
+                <field name="total_score"/>
+                <field name="max_possible_score" optional="show"/>
+                <field name="score_percentage"/>
+                <field name="overall_level"
+                       widget="badge"
+                       decoration-danger="overall_level == 'muy_bajo'"
+                       decoration-warning="overall_level == 'bajo'"
+                       decoration-info="overall_level == 'moderado'"
+                       decoration-success="overall_level == 'alto'"/>
+                <field name="state"
+                       widget="badge"
+                       decoration-info="state == 'borrador'"
+                       decoration-success="state in ['confirmado', 'cerrado']"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_performance_evaluation_search" model="ir.ui.view">
+        <field name="name">hr.performance.evaluation.search</field>
+        <field name="model">hr.performance.evaluation</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Evaluaciones de Desempeño">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="manager_id"/>
+                <field name="scheme_id"/>
+                <filter string="Con Esquema Mensual Vinculado" name="with_scheme" domain="[('scheme_id', '!=', False)]"/>
+                <filter string="Desempeño Muy Bajo / Bajo" name="low_perf" domain="[('overall_level', 'in', ['muy_bajo', 'bajo'])]"/>
+                <filter string="Desempeño Alto" name="high_perf" domain="[('overall_level', '=', 'alto')]"/>
+                <group>
+                    <filter string="Empleado" name="group_employee" context="{'group_by': 'employee_id'}"/>
+                    <filter string="Evaluador / Gerente" name="group_manager" context="{'group_by': 'manager_id'}"/>
+                    <filter string="Nivel General" name="group_level" context="{'group_by': 'overall_level'}"/>
+                    <filter string="Mes de Evaluación" name="group_date" context="{'group_by': 'evaluation_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_hr_performance_evaluation" model="ir.actions.act_window">
+        <field name="name">Formatos de Evaluación de Desempeño</field>
+        <field name="res_model">hr.performance.evaluation</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hr_performance_evaluation_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crea un nuevo Formato de Evaluación de Desempeño del Empleado
+            </p>
+            <p>
+                Selecciona al empleado, vincula opcionalmente su Esquema Mensual de Metas para autorrellenar el periodo, califica las competencias en escala 1 (Muy Bajo) a 4 (Alto) e imprime el formato en PDF.
+            </p>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         2. CATÁLOGO CONFIGURABLE DE PREGUNTAS (hr.performance.question)
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_hr_performance_question_list" model="ir.ui.view">
+        <field name="name">hr.performance.question.list</field>
+        <field name="model">hr.performance.question</field>
+        <field name="arch" type="xml">
+            <list string="Catálogo Configurable de Preguntas de Desempeño" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="section_name" placeholder="Ej. ORIENTACIÓN DE RESULTADOS, CALIDAD, INICIATIVA..."/>
+                <field name="name" placeholder="Escribe la pregunta o competencia a calificar..."/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_performance_question_search" model="ir.ui.view">
+        <field name="name">hr.performance.question.search</field>
+        <field name="model">hr.performance.question</field>
+        <field name="arch" type="xml">
+            <search string="Preguntas de Desempeño">
+                <field name="name"/>
+                <field name="section_name"/>
+                <filter string="Archivadas / Inactivas" name="inactive" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter string="Área del Desempeño" name="group_section" context="{'group_by': 'section_name'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_hr_performance_question" model="ir.actions.act_window">
+        <field name="name">Preguntas de Evaluación (Configurables)</field>
+        <field name="res_model">hr.performance.question</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hr_performance_question_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Configura las preguntas y áreas del Formato de Evaluación del Empleado
+            </p>
+            <p>
+                Puedes agregar nuevas preguntas, editar el texto, cambiar el Área del Desempeño o desactivar las que no necesites.
+            </p>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         3. MENÚS EN LA MISMA ÁREA QUE ESQUEMAS MENSUALES DE METAS
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <menuitem id="menu_ava_metas_app_evaluations"
+              name="Evaluaciones de Desempeño"
+              parent="menu_ava_metas_app_root"
+              action="action_hr_performance_evaluation"
+              sequence="15"/>
+
+    <menuitem id="menu_ava_metas_app_questions"
+              name="Preguntas de Evaluación"
+              parent="menu_ava_metas_app_root"
+              action="action_hr_performance_question"
+              sequence="80"/>
+
+    <menuitem id="menu_hr_sales_performance_evaluations"
+              name="Evaluaciones de Desempeño"
+              parent="menu_hr_sales_performance_root"
+              action="action_hr_performance_evaluation"
+              sequence="15"/>
+
+    <menuitem id="menu_hr_sales_performance_questions"
+              name="Preguntas de Evaluación"
+              parent="menu_hr_sales_performance_root"
+              action="action_hr_performance_question"
+              sequence="25"/>
+</odoo>

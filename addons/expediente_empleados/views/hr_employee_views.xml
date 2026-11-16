@@ -20,6 +20,13 @@
                         invisible="not es_agente_ventas and legal_observation_count == 0">
                     <field name="legal_observation_count" widget="statinfo" string="Observaciones"/>
                 </button>
+                <button name="action_view_performance_evaluations"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-star"
+                        invisible="not es_agente_ventas and performance_evaluation_count == 0">
+                    <field name="performance_evaluation_count" widget="statinfo" string="Evaluaciones"/>
+                </button>
             </xpath>
 
             <xpath expr="//notebook" position="inside">
@@ -109,6 +116,20 @@
                             <field name="incident_type"/>
                             <field name="breached_obligation_ids" widget="many2many_tags"/>
                             <field name="verification_date"/>
+                            <field name="state" widget="badge"/>
+                        </list>
+                    </field>
+                    <separator string="Historial de Evaluaciones de Desempeño"/>
+                    <field name="performance_evaluation_ids" context="{'default_employee_id': id}">
+                        <list>
+                            <field name="name"/>
+                            <field name="evaluation_date"/>
+                            <field name="scheme_id"/>
+                            <field name="period_display"/>
+                            <field name="total_score"/>
+                            <field name="max_possible_score"/>
+                            <field name="score_percentage"/>
+                            <field name="overall_level" widget="badge"/>
                             <field name="state" widget="badge"/>
                         </list>
                     </field>

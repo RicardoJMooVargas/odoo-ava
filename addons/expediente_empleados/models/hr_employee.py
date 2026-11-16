@@ -42,12 +42,21 @@ class HrEmployee(models.Model):
         "employee_id",
         string="Historial de Observaciones Legales",
     )
+    performance_evaluation_ids = fields.One2many(
+        "hr.performance.evaluation",
+        "employee_id",
+        string="Formatos de Evaluación del Empleado",
+    )
     sales_scheme_count = fields.Integer(
         string="Esquemas Mensuales",
         compute="_compute_sales_counts",
     )
     legal_observation_count = fields.Integer(
         string="Observaciones Legales",
+        compute="_compute_sales_counts",
+    )
+    performance_evaluation_count = fields.Integer(
+        string="Evaluaciones de Desempeño",
         compute="_compute_sales_counts",
     )
 
@@ -125,11 +134,23 @@ class HrEmployee(models.Model):
         string="Acta de hechos",
     )
 
-    @api.depends("sales_scheme_ids", "legal_observation_ids")
+    @api.depends("sales_scheme_ids", "legal_observation_ids", "performance_evaluation_ids")
     def _compute_sales_counts(self):
         for emp in self:
             emp.sales_scheme_count = len(emp.sales_scheme_ids)
             emp.legal_observation_count = len(emp.legal_observation_ids)
+            emp.performance_evaluation_count = len(emp.performance_evaluation_ids)
+
+    def action_view_performance_evaluations(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Evaluaciones de Desempeño - %s") % self.name,
+            "res_model": "hr.performance.evaluation",
+            "view_mode": "list,form",
+            "domain": [("employee_id", "=", self.id)],
+            "context": {"default_employee_id": self.id},
+        }
 
     def action_view_sales_schemes(self):
         self.ensure_one()
